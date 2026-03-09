@@ -1,0 +1,2276 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>反诈大冒险 - 防范电信诈骗互动游戏</title>
+    <style>
+        /* ========================================
+           全局样式重置与基础设置
+           ======================================== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            color: #333;
+        }
+
+        /* 游戏容器 */
+        #game-container {
+            max-width: 480px;
+            margin: 0 auto;
+            min-height: 100vh;
+            position: relative;
+            background: #f5f7fa;
+            box-shadow: 0 0 30px rgba(0,0,0,0.3);
+        }
+
+        /* ========================================
+           页面切换动画
+           ======================================== */
+        .page {
+            display: none;
+            animation: fadeIn 0.5s ease;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ========================================
+           首页样式
+           ======================================== */
+        .home-page {
+            text-align: center;
+            padding-top: 60px;
+            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .game-logo {
+            font-size: 48px;
+            margin-bottom: 10px;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .game-title {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .game-subtitle {
+            font-size: 16px;
+            opacity: 0.9;
+            margin-bottom: 40px;
+        }
+
+        .game-intro {
+            background: rgba(255,255,255,0.15);
+            border-radius: 20px;
+            padding: 25px;
+            margin: 0 20px 40px;
+            backdrop-filter: blur(10px);
+        }
+
+        .game-intro h3 {
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+
+        .game-intro p {
+            font-size: 14px;
+            line-height: 1.8;
+            text-align: left;
+        }
+
+        .level-preview {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+
+        .level-card {
+            background: rgba(255,255,255,0.2);
+            border-radius: 15px;
+            padding: 15px 20px;
+            min-width: 100px;
+        }
+
+        .level-card .icon {
+            font-size: 30px;
+            margin-bottom: 5px;
+        }
+
+        .level-card .name {
+            font-size: 12px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            border: none;
+            padding: 18px 60px;
+            font-size: 20px;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(245, 87, 108, 0.4);
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 15px 40px rgba(245, 87, 108, 0.5);
+        }
+
+        .btn-primary:active {
+            transform: translateY(-1px) scale(0.98);
+        }
+
+        .progress-info {
+            margin-top: 30px;
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        /* ========================================
+           关卡选择页
+           ======================================== */
+        .level-select-page {
+            background: #f5f7fa;
+            padding-top: 30px;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .page-header h2 {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .page-header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .levels-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .level-item {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .level-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+
+        .level-item.locked {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .level-item.locked::after {
+            content: '🔒';
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 24px;
+        }
+
+        .level-item.completed::before {
+            content: '✓';
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 30px;
+            height: 30px;
+            background: #52c41a;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .level-number {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            line-height: 40px;
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .level-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .level-desc {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .back-btn {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            cursor: pointer;
+            font-size: 14px;
+            color: #666;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            transform: translateX(-5px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+
+        /* ========================================
+           关卡1：陷阱躲避游戏
+           ======================================== */
+        .level1-page {
+            background: linear-gradient(180deg, #ffecd2 0%, #fcb69f 100%);
+            padding: 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .game-header {
+            background: rgba(255,255,255,0.9);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            z-index: 10;
+        }
+
+        .game-header .title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .game-header .score {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .game-header .score span {
+            color: #f5576c;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .game-area {
+            position: relative;
+            height: calc(100vh - 140px);
+            overflow: hidden;
+        }
+
+        .player {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            z-index: 5;
+            transition: left 0.1s ease;
+        }
+
+        .trap {
+            position: absolute;
+            padding: 8px 15px;
+            background: #ff4757;
+            color: white;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            box-shadow: 0 3px 10px rgba(255, 71, 87, 0.4);
+            animation: fall linear;
+        }
+
+        @keyframes fall {
+            from { top: -50px; }
+            to { top: 100%; }
+        }
+
+        .item {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            box-shadow: 0 3px 10px rgba(240, 147, 251, 0.4);
+            animation: fall linear;
+            z-index: 4;
+        }
+
+        .tip-popup {
+            position: fixed;
+            right: 10px;
+            top: 80px;
+            max-width: 200px;
+            background: rgba(255,255,255,0.95);
+            padding: 12px 15px;
+            border-radius: 15px;
+            font-size: 12px;
+            color: #333;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+            z-index: 100;
+            animation: slideIn 0.3s ease;
+            border-left: 4px solid #667eea;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .game-controls {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 80px;
+            background: rgba(255,255,255,0.9);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 0 20px;
+        }
+
+        .control-btn {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            transition: all 0.1s ease;
+            user-select: none;
+        }
+
+        .control-btn:active {
+            transform: scale(0.9);
+        }
+
+        .progress-bar {
+            position: fixed;
+            top: 60px;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: rgba(255,255,255,0.5);
+            z-index: 10;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s ease;
+        }
+
+        /* ========================================
+           关卡2：聊天剧情抉择
+           ======================================== */
+        .level2-page {
+            background: #f0f2f5;
+            padding: 0;
+        }
+
+        .chat-container {
+            height: calc(100vh - 180px);
+            overflow-y: auto;
+            padding: 20px;
+            padding-bottom: 200px;
+        }
+
+        .chat-message {
+            display: flex;
+            margin-bottom: 20px;
+            animation: messageIn 0.3s ease;
+        }
+
+        @keyframes messageIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .chat-message.other {
+            justify-content: flex-start;
+        }
+
+        .chat-message.self {
+            justify-content: flex-end;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .chat-message.other .avatar {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            margin-right: 10px;
+        }
+
+        .chat-message.self .avatar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin-left: 10px;
+            order: 2;
+        }
+
+        .message-bubble {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            line-height: 1.6;
+            word-wrap: break-word;
+        }
+
+        .chat-message.other .message-bubble {
+            background: white;
+            color: #333;
+            border-bottom-left-radius: 5px;
+        }
+
+        .chat-message.self .message-bubble {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-bottom-right-radius: 5px;
+        }
+
+        .choices-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            padding: 20px;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.1);
+            z-index: 10;
+        }
+
+        .choices-container h4 {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .choice-btn {
+            display: block;
+            width: 100%;
+            padding: 15px 20px;
+            margin-bottom: 10px;
+            background: #f5f7fa;
+            border: 2px solid transparent;
+            border-radius: 15px;
+            font-size: 14px;
+            color: #333;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+        }
+
+        .choice-btn:hover {
+            background: #e8f4f8;
+            border-color: #667eea;
+        }
+
+        .choice-btn.correct {
+            background: #d4edda;
+            border-color: #28a745;
+        }
+
+        .choice-btn.wrong {
+            background: #f8d7da;
+            border-color: #dc3545;
+        }
+
+        /* ========================================
+           关卡3：线索找茬
+           ======================================== */
+        .level3-page {
+            background: #f5f7fa;
+            padding: 0;
+        }
+
+        .find-game-area {
+            padding: 20px;
+            padding-bottom: 150px;
+        }
+
+        .screenshot-container {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        .screenshot-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .screenshot-header .avatar {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            margin-right: 10px;
+        }
+
+        .screenshot-header .info h4 {
+            font-size: 16px;
+            color: #333;
+        }
+
+        .screenshot-header .info p {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .chat-content {
+            font-size: 14px;
+            line-height: 1.8;
+        }
+
+        .chat-content p {
+            margin-bottom: 15px;
+            padding: 10px 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            position: relative;
+        }
+
+        .chat-content .clue {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .chat-content .clue:hover {
+            background: #fff3cd;
+            border-color: #ffc107;
+        }
+
+        .chat-content .clue.found {
+            background: #d4edda;
+            border-color: #28a745;
+        }
+
+        .clue-marker {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 24px;
+            height: 24px;
+            background: #28a745;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .find-progress {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            padding: 20px;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.1);
+            z-index: 10;
+        }
+
+        .find-progress h4 {
+            font-size: 16px;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .find-progress p {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .clue-explanation {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 25px;
+            border-radius: 20px;
+            max-width: 320px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            z-index: 1000;
+            animation: popIn 0.3s ease;
+        }
+
+        @keyframes popIn {
+            from { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
+            to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+
+        .clue-explanation h4 {
+            color: #f5576c;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .clue-explanation p {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .clue-explanation button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+        }
+
+        /* ========================================
+           结算弹窗
+           ======================================== */
+        .result-modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 30px;
+            border-radius: 25px;
+            max-width: 360px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            z-index: 1000;
+            animation: popIn 0.3s ease;
+            text-align: center;
+        }
+
+        .result-modal .icon {
+            font-size: 60px;
+            margin-bottom: 15px;
+        }
+
+        .result-modal h3 {
+            font-size: 22px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .result-modal .score-display {
+            font-size: 36px;
+            font-weight: bold;
+            color: #f5576c;
+            margin-bottom: 20px;
+        }
+
+        .knowledge-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .knowledge-card h4 {
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        .knowledge-card ul {
+            font-size: 13px;
+            line-height: 1.8;
+            padding-left: 18px;
+        }
+
+        .result-modal .btn-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .result-modal .btn-group button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-next {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-retry {
+            background: #f5f7fa;
+            color: #666;
+        }
+
+        /* ========================================
+           通关页面
+           ======================================== */
+        .complete-page {
+            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+            padding-top: 80px;
+        }
+
+        .complete-page .trophy {
+            font-size: 100px;
+            margin-bottom: 20px;
+            animation: trophyBounce 1s ease infinite;
+        }
+
+        @keyframes trophyBounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .complete-page h2 {
+            font-size: 28px;
+            margin-bottom: 15px;
+        }
+
+        .complete-page .final-score {
+            font-size: 48px;
+            font-weight: bold;
+            margin-bottom: 30px;
+        }
+
+        .complete-summary {
+            background: rgba(255,255,255,0.15);
+            border-radius: 20px;
+            padding: 25px;
+            margin: 0 20px 40px;
+            backdrop-filter: blur(10px);
+            text-align: left;
+        }
+
+        .complete-summary h3 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .complete-summary .tip-item {
+            background: rgba(255,255,255,0.2);
+            padding: 12px 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        /* ========================================
+           响应式适配
+           ======================================== */
+        @media (min-width: 481px) {
+            #game-container {
+                max-width: 480px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .game-title {
+                font-size: 28px;
+            }
+
+            .game-logo {
+                font-size: 40px;
+            }
+
+            .btn-primary {
+                padding: 16px 50px;
+                font-size: 18px;
+            }
+
+            .control-btn {
+                width: 70px;
+                height: 70px;
+                font-size: 28px;
+            }
+
+            .level-item {
+                padding: 20px;
+            }
+        }
+
+        /* 隐藏滚动条但保持功能 */
+        .chat-container::-webkit-scrollbar {
+            width: 0;
+            height: 0;
+        }
+
+        /* 选中文字样式 */
+        ::selection {
+            background: rgba(102, 126, 234, 0.3);
+        }
+
+        /* ========================================
+           音乐控制按钮
+           ======================================== */
+        .music-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background: rgba(255,255,255,0.9);
+            border: none;
+            border-radius: 50%;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            z-index: 1000;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .music-toggle:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+
+        .music-toggle.muted {
+            background: rgba(200,200,200,0.9);
+            opacity: 0.7;
+        }
+
+        .music-toggle.muted::after {
+            content: '';
+            position: absolute;
+            width: 2px;
+            height: 30px;
+            background: #ff4757;
+            transform: rotate(45deg);
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <!-- ========================================
+             首页
+             ======================================== -->
+        <div class="page home-page active" id="home-page">
+            <div class="game-logo">🛡️</div>
+            <h1 class="game-title">反诈大冒险</h1>
+            <p class="game-subtitle">防范电信诈骗 · 守护财产安全</p>
+            
+            <div class="game-intro">
+                <h3>🎮 游戏介绍</h3>
+                <p>
+                    欢迎来到反诈大冒险！这是一款融合反诈知识的互动游戏。
+                    你将通过三个趣味关卡，体验不同类型的诈骗场景，
+                    学习识别诈骗套路，提升防范意识。
+                    <br><br>
+                    游戏不采用枯燥的问答形式，而是通过沉浸式玩法让你在闯关中自然掌握反诈知识！
+                </p>
+            </div>
+
+            <div class="level-preview">
+                <div class="level-card">
+                    <div class="icon">🏃</div>
+                    <div class="name">躲避陷阱</div>
+                </div>
+                <div class="level-card">
+                    <div class="icon">💬</div>
+                    <div class="name">剧情抉择</div>
+                </div>
+                <div class="level-card">
+                    <div class="icon">🔍</div>
+                    <div class="name">线索找茬</div>
+                </div>
+            </div>
+
+            <button class="btn-primary" onclick="audioManager.playClick(); game.showLevelSelect()">开始游戏</button>
+
+            <div class="progress-info" id="progress-info">
+                <!-- 动态显示游戏进度 -->
+            </div>
+        </div>
+
+        <!-- ========================================
+             关卡选择页
+             ======================================== -->
+        <div class="page level-select-page" id="level-select-page">
+            <div class="page-header">
+                <h2>选择关卡</h2>
+                <p>完成前一关解锁下一关</p>
+            </div>
+
+            <div class="levels-grid">
+                <div class="level-item" id="level-1" onclick="game.startLevel(1)">
+                    <span class="level-number">1</span>
+                    <div class="level-name">刷单诈骗陷阱</div>
+                    <div class="level-desc">躲避诈骗陷阱，收集反诈道具</div>
+                </div>
+
+                <div class="level-item locked" id="level-2" onclick="game.startLevel(2)">
+                    <span class="level-number">2</span>
+                    <div class="level-name">网恋诈骗剧情</div>
+                    <div class="level-desc">模拟聊天场景，做出正确抉择</div>
+                </div>
+
+                <div class="level-item locked" id="level-3" onclick="game.startLevel(3)">
+                    <span class="level-number">3</span>
+                    <div class="level-name">客服诈骗找茬</div>
+                    <div class="level-desc">找出聊天截图中的诈骗线索</div>
+                </div>
+            </div>
+
+            <button class="back-btn" onclick="audioManager.playClick(); game.showHome()">← 返回首页</button>
+        </div>
+
+        <!-- ========================================
+             关卡1：陷阱躲避
+             ======================================== -->
+        <div class="page level1-page" id="level1-page">
+            <div class="progress-bar">
+                <div class="progress-fill" id="level1-progress" style="width: 0%"></div>
+            </div>
+
+            <div class="game-header">
+                <div class="title">关卡1：躲避诈骗陷阱</div>
+                <div class="score">得分: <span id="level1-score">0</span></div>
+            </div>
+
+            <div class="game-area" id="game-area-level1">
+                <div class="player" id="player">🛡️</div>
+            </div>
+
+            <div class="game-controls">
+                <button class="control-btn" id="btn-left" onmousedown="level1.moveLeft()" ontouchstart="level1.moveLeft()">←</button>
+                <button class="control-btn" id="btn-right" onmousedown="level1.moveRight()" ontouchstart="level1.moveRight()">→</button>
+            </div>
+        </div>
+
+        <!-- ========================================
+             关卡2：聊天剧情
+             ======================================== -->
+        <div class="page level2-page" id="level2-page">
+            <div class="game-header">
+                <div class="title">关卡2：网恋诈骗抉择</div>
+                <div class="score">进度: <span id="level2-progress-text">1/5</span></div>
+            </div>
+
+            <div class="chat-container" id="chat-container">
+                <!-- 聊天消息动态生成 -->
+            </div>
+
+            <div class="choices-container" id="choices-container">
+                <h4>请选择你的回复：</h4>
+                <!-- 选项按钮动态生成 -->
+            </div>
+        </div>
+
+        <!-- ========================================
+             关卡3：线索找茬
+             ======================================== -->
+        <div class="page level3-page" id="level3-page">
+            <div class="game-header">
+                <div class="title">关卡3：找出诈骗线索</div>
+                <div class="score">找到: <span id="level3-found">0</span>/5</div>
+            </div>
+
+            <div class="find-game-area">
+                <div class="screenshot-container">
+                    <div class="screenshot-header">
+                        <div class="avatar">👤</div>
+                        <div class="info">
+                            <h4>淘宝客服-小美</h4>
+                            <p>在线</p>
+                        </div>
+                    </div>
+                    <div class="chat-content" id="find-chat-content">
+                        <p>您好，我是淘宝客服小美。检测到您购买的商品存在质量问题。</p>
+                        <p class="clue" data-clue="0" onclick="level3.findClue(0)">
+                            我们将为您办理退款，但需要您先缴纳<span style="color:#f5576c;font-weight:bold;">500元保证金</span>到我们的安全账户，退款成功后立即返还。
+                        </p>
+                        <p>请您提供银行卡号和验证码，我们好进行退款操作。</p>
+                        <p class="clue" data-clue="1" onclick="level3.findClue(1)">
+                            为了加快处理，请直接转账到<span style="color:#f5576c;font-weight:bold;">私人账户：6222 **** **** 8888</span>，备注您的姓名。
+                        </p>
+                        <p>系统显示您的账户存在异常，需要激活才能退款。</p>
+                        <p class="clue" data-clue="2" onclick="level3.findClue(2)">
+                            请点击这个链接<span style="color:#667eea;text-decoration:underline;">http://taobao-refund.xyz</span>填写退款信息。
+                        </p>
+                        <p>时间紧迫，必须在<span style="color:#f5576c;font-weight:bold;">30分钟内</span>完成操作，否则退款通道将关闭。</p>
+                        <p class="clue" data-clue="3" onclick="level3.findClue(3)">
+                            不要联系官方客服，这是<span style="color:#f5576c;font-weight:bold;">内部特殊通道</span>，走正常渠道无法退款。
+                        </p>
+                        <p>如果您不配合，我们将冻结您的账户并报警处理。</p>
+                        <p class="clue" data-clue="4" onclick="level3.findClue(4)">
+                            请加我微信<span style="color:#667eea;font-weight:bold;">kefu888999</span>详谈，电话里说不清楚。
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="find-progress">
+                <h4>🔍 找出所有诈骗线索</h4>
+                <p>点击聊天内容中可疑的地方，找出5个诈骗特征</p>
+            </div>
+        </div>
+
+        <!-- ========================================
+             通关页面
+             ======================================== -->
+        <div class="page complete-page" id="complete-page">
+            <div class="trophy">🏆</div>
+            <h2>恭喜通关！</h2>
+            <div class="final-score" id="final-score">0</div>
+            <p>你已完成所有反诈关卡</p>
+
+            <div class="complete-summary">
+                <h3>📝 反诈知识总结</h3>
+                <div class="tip-item">
+                    <strong>刷单诈骗：</strong>所有刷单都是诈骗，不存在无成本高返利，切勿垫付资金。
+                </div>
+                <div class="tip-item">
+                    <strong>网恋诈骗：</strong>网络交友需谨慎，涉及转账要核实，警惕"杀猪盘"套路。
+                </div>
+                <div class="tip-item">
+                    <strong>客服诈骗：</strong>正规客服不会索要密码验证码，不会要求转账到私人账户。
+                </div>
+                <div class="tip-item">
+                    <strong>通用口诀：</strong>未知链接不点击、陌生来电不轻信、个人信息不透露、转账汇款多核实。
+                </div>
+            </div>
+
+            <button class="btn-primary" onclick="audioManager.playClick(); game.resetGame()">重新挑战</button>
+        </div>
+
+        <!-- 弹窗容器 -->
+        <div id="modal-container"></div>
+
+        <!-- 音乐控制按钮 -->
+        <button class="music-toggle" id="music-toggle" onclick="audioManager.toggle()">
+            🔊
+        </button>
+    </div>
+
+    <script>
+        /**
+         * ========================================
+         * 反诈大冒险游戏 - 主游戏逻辑
+         * ========================================
+         * 本游戏采用纯前端技术实现，包含以下核心模块：
+         * 1. 游戏状态管理（localStorage存储进度）
+         * 2. 三个独立关卡的游戏逻辑
+         * 3. 页面路由与切换
+         * 4. 响应式交互适配
+         */
+
+        // ========================================
+        // 音频管理器 - 使用Web Audio API生成音效
+        // ========================================
+        const audioManager = {
+            // 音频上下文
+            ctx: null,
+            // 是否静音
+            muted: false,
+            // BGM振荡器
+            bgmOscillator: null,
+            // BGM增益节点
+            bgmGain: null,
+            // 当前BGM音符索引
+            bgmNoteIndex: 0,
+            // BGM定时器
+            bgmTimer: null,
+
+            /**
+             * 初始化音频上下文
+             */
+            init() {
+                // 创建音频上下文
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                this.ctx = new AudioContext();
+                
+                // 从localStorage读取静音状态
+                const savedMute = localStorage.getItem('antiFraudGameMuted');
+                if (savedMute !== null) {
+                    this.muted = savedMute === 'true';
+                    this.updateButton();
+                }
+            },
+
+            /**
+             * 播放音效 - 按钮点击
+             */
+            playClick() {
+                if (this.muted || !this.ctx) return;
+                this.playTone(800, 0.05, 0.1, 'sine');
+            },
+
+            /**
+             * 播放音效 - 成功/通关
+             */
+            playSuccess() {
+                if (this.muted || !this.ctx) return;
+                // 播放成功和弦
+                this.playTone(523.25, 0.1, 0.3, 'sine'); // C5
+                setTimeout(() => this.playTone(659.25, 0.1, 0.3, 'sine'), 100); // E5
+                setTimeout(() => this.playTone(783.99, 0.1, 0.3, 'sine'), 200); // G5
+            },
+
+            /**
+             * 播放音效 - 失败
+             */
+            playFail() {
+                if (this.muted || !this.ctx) return;
+                // 播放失败音效
+                this.playTone(200, 0.1, 0.3, 'sawtooth');
+                setTimeout(() => this.playTone(150, 0.2, 0.3, 'sawtooth'), 150);
+            },
+
+            /**
+             * 播放音效 - 收集道具
+             */
+            playCollect() {
+                if (this.muted || !this.ctx) return;
+                this.playTone(880, 0.05, 0.15, 'sine');
+                setTimeout(() => this.playTone(1174.66, 0.05, 0.15, 'sine'), 50);
+            },
+
+            /**
+             * 播放音效 - 碰撞/危险
+             */
+            playHit() {
+                if (this.muted || !this.ctx) return;
+                this.playTone(150, 0.1, 0.3, 'square');
+            },
+
+            /**
+             * 播放单个音符
+             * @param {number} frequency - 频率(Hz)
+             * @param {number} attack -  Attack时间(秒)
+             * @param {number} duration - 持续时间(秒)
+             * @param {string} type - 波形类型
+             * @param {number} volume - 音量(0-1)
+             */
+            playTone(frequency, attack, duration, type = 'sine', volume = 0.3) {
+                if (!this.ctx) return;
+
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+
+                osc.frequency.value = frequency;
+                osc.type = type;
+
+                // 设置音量包络
+                const now = this.ctx.currentTime;
+                gain.gain.setValueAtTime(0, now);
+                gain.gain.linearRampToValueAtTime(volume, now + attack);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + attack + duration);
+
+                osc.start(now);
+                osc.stop(now + attack + duration + 0.05);
+            },
+
+            /**
+             * 开始播放背景音乐
+             * 轻快、放松、治愈风格的旋律
+             */
+            startBGM() {
+                if (this.muted || !this.ctx) return;
+                this.stopBGM();
+
+                // 治愈系BGM音符序列 - 采用五声音阶，营造轻松愉悦的氛围
+                // C大调五声音阶：C - D - E - G - A
+                const melody = [
+                    // 第一段：轻柔引入
+                    {f: 523.25, d: 0.6, t: 'sine', v: 0.15},   // C5
+                    {f: 587.33, d: 0.6, t: 'sine', v: 0.15},   // D5
+                    {f: 659.25, d: 0.8, t: 'sine', v: 0.15},   // E5
+                    {f: 0, d: 0.4, t: 'sine', v: 0},           // 休止
+                    {f: 659.25, d: 0.6, t: 'sine', v: 0.15},   // E5
+                    {f: 587.33, d: 0.6, t: 'sine', v: 0.15},   // D5
+                    {f: 523.25, d: 0.8, t: 'sine', v: 0.15},   // C5
+                    {f: 0, d: 0.4, t: 'sine', v: 0},           // 休止
+
+                    // 第二段：旋律上扬
+                    {f: 523.25, d: 0.5, t: 'sine', v: 0.15},   // C5
+                    {f: 659.25, d: 0.5, t: 'sine', v: 0.15},   // E5
+                    {f: 783.99, d: 0.6, t: 'sine', v: 0.15},   // G5
+                    {f: 880.00, d: 0.6, t: 'sine', v: 0.15},   // A5
+                    {f: 783.99, d: 0.8, t: 'sine', v: 0.15},   // G5
+                    {f: 0, d: 0.3, t: 'sine', v: 0},           // 休止
+
+                    // 第三段：舒缓下行
+                    {f: 880.00, d: 0.5, t: 'sine', v: 0.15},   // A5
+                    {f: 783.99, d: 0.5, t: 'sine', v: 0.15},   // G5
+                    {f: 659.25, d: 0.6, t: 'sine', v: 0.15},   // E5
+                    {f: 587.33, d: 0.6, t: 'sine', v: 0.15},   // D5
+                    {f: 523.25, d: 1.0, t: 'sine', v: 0.15},   // C5（长音）
+                    {f: 0, d: 0.5, t: 'sine', v: 0},           // 休止
+
+                    // 第四段：重复变奏
+                    {f: 659.25, d: 0.5, t: 'sine', v: 0.15},   // E5
+                    {f: 659.25, d: 0.5, t: 'sine', v: 0.15},   // E5
+                    {f: 587.33, d: 0.5, t: 'sine', v: 0.15},   // D5
+                    {f: 587.33, d: 0.5, t: 'sine', v: 0.15},   // D5
+                    {f: 523.25, d: 0.8, t: 'sine', v: 0.15},   // C5
+                    {f: 0, d: 0.3, t: 'sine', v: 0},           // 休止
+
+                    // 结尾：渐弱收尾
+                    {f: 523.25, d: 0.4, t: 'sine', v: 0.12},   // C5
+                    {f: 587.33, d: 0.4, t: 'sine', v: 0.10},   // D5
+                    {f: 523.25, d: 1.2, t: 'sine', v: 0.08},   // C5（渐弱长音）
+                    {f: 0, d: 0.8, t: 'sine', v: 0}            // 休止
+                ];
+
+                const playNextNote = () => {
+                    if (this.muted) return;
+
+                    const note = melody[this.bgmNoteIndex % melody.length];
+
+                    // 播放音符（如果是休止符则不播放）
+                    if (note.f > 0) {
+                        this.playTone(note.f, 0.08, note.d - 0.08, note.t, note.v);
+                    }
+
+                    this.bgmNoteIndex++;
+                    this.bgmTimer = setTimeout(playNextNote, note.d * 1000);
+                };
+
+                playNextNote();
+            },
+
+            /**
+             * 停止背景音乐
+             */
+            stopBGM() {
+                if (this.bgmTimer) {
+                    clearTimeout(this.bgmTimer);
+                    this.bgmTimer = null;
+                }
+                this.bgmNoteIndex = 0;
+            },
+
+            /**
+             * 切换静音状态
+             */
+            toggle() {
+                this.muted = !this.muted;
+                localStorage.setItem('antiFraudGameMuted', this.muted);
+                this.updateButton();
+                
+                if (this.muted) {
+                    this.stopBGM();
+                } else {
+                    // 恢复音频上下文（浏览器策略）
+                    if (this.ctx && this.ctx.state === 'suspended') {
+                        this.ctx.resume();
+                    }
+                    this.startBGM();
+                }
+            },
+
+            /**
+             * 更新音乐按钮显示
+             */
+            updateButton() {
+                const btn = document.getElementById('music-toggle');
+                if (btn) {
+                    btn.textContent = this.muted ? '🔇' : '🔊';
+                    btn.classList.toggle('muted', this.muted);
+                }
+            }
+        };
+
+        // ========================================
+        // 游戏配置与数据
+        // ========================================
+        const GAME_CONFIG = {
+            // 关卡1配置：陷阱躲避
+            level1: {
+                duration: 30,           // 游戏时长（秒）
+                trapSpeed: 3,           // 陷阱下落速度（秒）
+                spawnInterval: 1500,    // 生成间隔（毫秒）
+                playerSpeed: 15,        // 玩家移动速度（像素）
+                winScore: 100           // 通关所需分数
+            },
+            // 关卡2配置：剧情抉择
+            level2: {
+                totalScenes: 5          // 总场景数
+            },
+            // 关卡3配置：线索找茬
+            level3: {
+                totalClues: 5           // 总线索数
+            }
+        };
+
+        // 关卡1反诈知识提示
+        const LEVEL1_TIPS = [
+            "刷单都是诈骗，没有无成本高返利！",
+            "先垫付后返利的都是骗局！",
+            "高额佣金往往是诈骗诱饵！",
+            "刷单违法，切勿参与！",
+            "正规兼职不会要求先交钱！",
+            "网络刷单100%是诈骗！",
+            "警惕'轻松赚钱'的陷阱！",
+            "任何垫付要求都是诈骗！"
+        ];
+
+        // 关卡2剧情数据
+        const LEVEL2_STORY = [
+            {
+                npc: "嗨，在吗？我是通过交友平台看到你的资料的。",
+                choices: [
+                    { text: "你好，请问有什么事？", correct: true },
+                    { text: "直接发红包表示诚意", correct: false }
+                ],
+                wrongTip: "刚认识就发红包？这可能是诈骗分子的套路！"
+            },
+            {
+                npc: "我觉得你很有趣，可以认识一下吗？我在国外做金融投资。",
+                choices: [
+                    { text: "可以聊聊，但我不投资", correct: true },
+                    { text: "听起来很厉害，带带我", correct: false }
+                ],
+                wrongTip: "网恋对象推荐投资？这是典型的'杀猪盘'诈骗！"
+            },
+            {
+                npc: "我们聊得这么投机，你有考虑过我们的未来吗？",
+                choices: [
+                    { text: "先见面了解再说", correct: true },
+                    { text: "我相信你，听你的安排", correct: false }
+                ],
+                wrongTip: "网恋未见面就谈未来？保持理性，谨防被骗！"
+            },
+            {
+                npc: "我这边有个紧急情况，需要2万元周转，你能帮我吗？",
+                choices: [
+                    { text: "抱歉，我们还没见过面", correct: true },
+                    { text: "好，我马上转给你", correct: false }
+                ],
+                wrongTip: "网恋对象借钱？99%是诈骗！务必核实身份！"
+            },
+            {
+                npc: "你不帮我就是不爱我，我对你太失望了！",
+                choices: [
+                    { text: "感情不该用金钱衡量", correct: true },
+                    { text: "别生气，我这就转", correct: false }
+                ],
+                wrongTip: "用感情威胁转账？这是情感操控，坚决拒绝！"
+            }
+        ];
+
+        // 关卡3线索解释
+        const LEVEL3_CLUES = [
+            {
+                title: "⚠️ 要求先垫付",
+                explain: "正规退款不会要求先缴纳保证金或垫付资金，这是诈骗的典型特征！"
+            },
+            {
+                title: "⚠️ 要求转账到私人账户",
+                explain: "正规退款原路返回，不会要求转账到私人银行账户！"
+            },
+            {
+                title: "⚠️ 可疑链接",
+                explain: "非官方域名的链接可能是钓鱼网站，会窃取你的账户信息！"
+            },
+            {
+                title: "⚠️ 制造紧迫感",
+                explain: "诈骗分子常用'限时''通道关闭'等话术制造紧迫感，让你来不及思考！"
+            },
+            {
+                title: "⚠️ 要求私下联系",
+                explain: "正规客服不会要求加微信私聊，脱离平台监管的都是诈骗！"
+            }
+        ];
+
+        // ========================================
+        // 游戏主控制器
+        // ========================================
+        const game = {
+            // 游戏状态
+            state: {
+                currentLevel: 0,        // 当前关卡（0表示未开始）
+                unlockedLevels: [1],    // 已解锁关卡
+                completedLevels: [],    // 已完成关卡
+                totalScore: 0,          // 总得分
+                levelScores: {}         // 各关卡得分
+            },
+
+            /**
+             * 初始化游戏
+             * 从localStorage读取保存的游戏进度
+             */
+            init() {
+                this.loadState();
+                this.updateHomeProgress();
+                
+                // 初始化音频（需要用户交互后才能播放）
+                document.addEventListener('click', () => {
+                    if (!audioManager.ctx) {
+                        audioManager.init();
+                        audioManager.startBGM();
+                    } else if (audioManager.ctx.state === 'suspended') {
+                        audioManager.ctx.resume();
+                        audioManager.startBGM();
+                    }
+                }, { once: true });
+            },
+
+            /**
+             * 从localStorage加载游戏状态
+             */
+            loadState() {
+                const saved = localStorage.getItem('antiFraudGameState');
+                if (saved) {
+                    this.state = JSON.parse(saved);
+                }
+            },
+
+            /**
+             * 保存游戏状态到localStorage
+             */
+            saveState() {
+                localStorage.setItem('antiFraudGameState', JSON.stringify(this.state));
+            },
+
+            /**
+             * 更新首页进度显示
+             */
+            updateHomeProgress() {
+                const progressEl = document.getElementById('progress-info');
+                const completed = this.state.completedLevels.length;
+                if (completed > 0) {
+                    progressEl.innerHTML = `已完成 ${completed}/3 关 | 总得分: ${this.state.totalScore}`;
+                }
+            },
+
+            /**
+             * 显示首页
+             */
+            showHome() {
+                this.hideAllPages();
+                document.getElementById('home-page').classList.add('active');
+                this.updateHomeProgress();
+            },
+
+            /**
+             * 显示关卡选择页
+             */
+            showLevelSelect() {
+                this.hideAllPages();
+                document.getElementById('level-select-page').classList.add('active');
+                this.updateLevelSelectUI();
+            },
+
+            /**
+             * 更新关卡选择页UI状态
+             */
+            updateLevelSelectUI() {
+                for (let i = 1; i <= 3; i++) {
+                    const el = document.getElementById(`level-${i}`);
+                    el.classList.remove('locked', 'completed');
+                    
+                    if (this.state.completedLevels.includes(i)) {
+                        el.classList.add('completed');
+                    } else if (!this.state.unlockedLevels.includes(i)) {
+                        el.classList.add('locked');
+                    }
+                }
+            },
+
+            /**
+             * 隐藏所有页面
+             */
+            hideAllPages() {
+                document.querySelectorAll('.page').forEach(page => {
+                    page.classList.remove('active');
+                });
+            },
+
+            /**
+             * 开始指定关卡
+             * @param {number} level - 关卡编号
+             */
+            startLevel(level) {
+                // 检查关卡是否解锁
+                if (!this.state.unlockedLevels.includes(level)) {
+                    return;
+                }
+
+                this.state.currentLevel = level;
+                this.hideAllPages();
+
+                // 根据关卡启动对应游戏
+                switch(level) {
+                    case 1:
+                        document.getElementById('level1-page').classList.add('active');
+                        level1.init();
+                        break;
+                    case 2:
+                        document.getElementById('level2-page').classList.add('active');
+                        level2.init();
+                        break;
+                    case 3:
+                        document.getElementById('level3-page').classList.add('active');
+                        level3.init();
+                        break;
+                }
+            },
+
+            /**
+             * 完成关卡
+             * @param {number} level - 关卡编号
+             * @param {number} score - 关卡得分
+             * @param {boolean} success - 是否成功通关
+             */
+            completeLevel(level, score, success) {
+                if (success) {
+                    // 记录得分
+                    this.state.levelScores[level] = score;
+                    this.state.totalScore = Object.values(this.state.levelScores)
+                        .reduce((a, b) => a + b, 0);
+
+                    // 标记完成
+                    if (!this.state.completedLevels.includes(level)) {
+                        this.state.completedLevels.push(level);
+                    }
+
+                    // 解锁下一关
+                    const nextLevel = level + 1;
+                    if (nextLevel <= 3 && !this.state.unlockedLevels.includes(nextLevel)) {
+                        this.state.unlockedLevels.push(nextLevel);
+                    }
+
+                    this.saveState();
+
+                    // 检查是否全部通关
+                    if (this.state.completedLevels.length === 3) {
+                        setTimeout(() => this.showCompletePage(), 500);
+                    }
+                }
+            },
+
+            /**
+             * 显示通关页面
+             */
+            showCompletePage() {
+                this.hideAllPages();
+                document.getElementById('complete-page').classList.add('active');
+                document.getElementById('final-score').textContent = this.state.totalScore;
+            },
+
+            /**
+             * 重置游戏
+             */
+            resetGame() {
+                this.state = {
+                    currentLevel: 0,
+                    unlockedLevels: [1],
+                    completedLevels: [],
+                    totalScore: 0,
+                    levelScores: {}
+                };
+                this.saveState();
+                this.showHome();
+            },
+
+            /**
+             * 显示结算弹窗
+             * @param {Object} options - 弹窗配置
+             */
+            showResultModal(options) {
+                const container = document.getElementById('modal-container');
+                const modal = document.createElement('div');
+                modal.innerHTML = `
+                    <div class="overlay" onclick="game.closeModal()"></div>
+                    <div class="result-modal">
+                        <div class="icon">${options.icon}</div>
+                        <h3>${options.title}</h3>
+                        ${options.score !== undefined ? `<div class="score-display">${options.score}分</div>` : ''}
+                        ${options.knowledge ? `
+                            <div class="knowledge-card">
+                                <h4>${options.knowledge.title}</h4>
+                                <ul>${options.knowledge.items.map(item => `<li>${item}</li>`).join('')}</ul>
+                            </div>
+                        ` : ''}
+                        <div class="btn-group">
+                            ${options.showNext ? `<button class="btn-next" onclick="${options.onNext}">下一关 →</button>` : ''}
+                            ${options.showRetry ? `<button class="btn-retry" onclick="${options.onRetry}">重新挑战</button>` : ''}
+                            <button class="btn-retry" onclick="game.closeModal(); game.showLevelSelect();">返回关卡</button>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(modal);
+            },
+
+            /**
+             * 关闭弹窗
+             */
+            closeModal() {
+                document.getElementById('modal-container').innerHTML = '';
+            }
+        };
+
+        // ========================================
+        // 关卡1：陷阱躲避游戏
+        // ========================================
+        const level1 = {
+            // 游戏状态
+            score: 0,
+            timeLeft: 0,
+            isPlaying: false,
+            playerX: 50,            // 玩家位置（百分比）
+            gameLoop: null,
+            spawnTimer: null,
+            countdownTimer: null,
+            traps: [],
+            items: [],
+            tipIndex: 0,
+
+            /**
+             * 初始化关卡
+             */
+            init() {
+                this.reset();
+                this.start();
+            },
+
+            /**
+             * 重置游戏状态
+             */
+            reset() {
+                this.score = 0;
+                this.timeLeft = GAME_CONFIG.level1.duration;
+                this.isPlaying = true;
+                this.playerX = 50;
+                this.traps = [];
+                this.items = [];
+                this.tipIndex = 0;
+
+                // 更新UI
+                document.getElementById('level1-score').textContent = '0';
+                document.getElementById('level1-progress').style.width = '0%';
+                document.getElementById('player').style.left = '50%';
+
+                // 清除旧元素
+                document.querySelectorAll('.trap, .item, .tip-popup').forEach(el => el.remove());
+            },
+
+            /**
+             * 开始游戏
+             */
+            start() {
+                // 键盘控制
+                this.setupControls();
+
+                // 开始生成陷阱和道具
+                this.spawnTimer = setInterval(() => this.spawnObjects(), GAME_CONFIG.level1.spawnInterval);
+
+                // 开始倒计时
+                this.countdownTimer = setInterval(() => {
+                    this.timeLeft--;
+                    const progress = ((GAME_CONFIG.level1.duration - this.timeLeft) / GAME_CONFIG.level1.duration) * 100;
+                    document.getElementById('level1-progress').style.width = progress + '%';
+
+                    if (this.timeLeft <= 0) {
+                        this.end(true);
+                    }
+                }, 1000);
+
+                // 开始游戏循环
+                this.gameLoop = requestAnimationFrame(() => this.update());
+            },
+
+            /**
+             * 设置控制方式
+             */
+            setupControls() {
+                // 键盘控制
+                document.onkeydown = (e) => {
+                    if (!this.isPlaying) return;
+                    if (e.key === 'ArrowLeft') this.moveLeft();
+                    if (e.key === 'ArrowRight') this.moveRight();
+                };
+
+                // 触摸滑动控制
+                let touchStartX = 0;
+                const gameArea = document.getElementById('game-area-level1');
+                
+                gameArea.ontouchstart = (e) => {
+                    touchStartX = e.touches[0].clientX;
+                };
+
+                gameArea.ontouchmove = (e) => {
+                    if (!this.isPlaying) return;
+                    e.preventDefault();
+                    const touchX = e.touches[0].clientX;
+                    const rect = gameArea.getBoundingClientRect();
+                    const percent = ((touchX - rect.left) / rect.width) * 100;
+                    this.playerX = Math.max(5, Math.min(95, percent));
+                    document.getElementById('player').style.left = this.playerX + '%';
+                };
+            },
+
+            /**
+             * 向左移动
+             */
+            moveLeft() {
+                if (!this.isPlaying) return;
+                this.playerX = Math.max(5, this.playerX - GAME_CONFIG.level1.playerSpeed);
+                document.getElementById('player').style.left = this.playerX + '%';
+            },
+
+            /**
+             * 向右移动
+             */
+            moveRight() {
+                if (!this.isPlaying) return;
+                this.playerX = Math.min(95, this.playerX + GAME_CONFIG.level1.playerSpeed);
+                document.getElementById('player').style.left = this.playerX + '%';
+            },
+
+            /**
+             * 生成陷阱和道具
+             */
+            spawnObjects() {
+                if (!this.isPlaying) return;
+
+                const gameArea = document.getElementById('game-area-level1');
+                const isTrap = Math.random() > 0.3;  // 70%概率生成陷阱
+
+                if (isTrap) {
+                    // 生成陷阱
+                    const trapTexts = ['刷单返利', '高佣金', '轻松赚钱', '垫付立返', '日赚500'];
+                    const trap = document.createElement('div');
+                    trap.className = 'trap';
+                    trap.textContent = trapTexts[Math.floor(Math.random() * trapTexts.length)];
+                    trap.style.left = Math.random() * 80 + 10 + '%';
+                    trap.style.animationDuration = GAME_CONFIG.level1.trapSpeed + 's';
+                    gameArea.appendChild(trap);
+                    this.traps.push(trap);
+
+                    // 自动清理
+                    setTimeout(() => {
+                        if (trap.parentNode) {
+                            trap.remove();
+                            this.traps = this.traps.filter(t => t !== trap);
+                            // 成功躲避加分
+                            this.addScore(10);
+                            // 显示知识点
+                            this.showTip();
+                        }
+                    }, GAME_CONFIG.level1.trapSpeed * 1000);
+                } else {
+                    // 生成道具
+                    const item = document.createElement('div');
+                    item.className = 'item';
+                    item.textContent = '🛡️';
+                    item.style.left = Math.random() * 80 + 10 + '%';
+                    item.style.animationDuration = (GAME_CONFIG.level1.trapSpeed + 1) + 's';
+                    gameArea.appendChild(item);
+                    this.items.push(item);
+
+                    setTimeout(() => {
+                        if (item.parentNode) {
+                            item.remove();
+                            this.items = this.items.filter(i => i !== item);
+                        }
+                    }, (GAME_CONFIG.level1.trapSpeed + 1) * 1000);
+                }
+            },
+
+            /**
+             * 显示知识点提示
+             */
+            showTip() {
+                const tip = LEVEL1_TIPS[this.tipIndex % LEVEL1_TIPS.length];
+                this.tipIndex++;
+
+                const popup = document.createElement('div');
+                popup.className = 'tip-popup';
+                popup.textContent = '💡 ' + tip;
+                document.getElementById('level1-page').appendChild(popup);
+
+                setTimeout(() => popup.remove(), 4000);
+            },
+
+            /**
+             * 增加分数
+             */
+            addScore(points) {
+                this.score += points;
+                document.getElementById('level1-score').textContent = this.score;
+            },
+
+            /**
+             * 播放收集音效
+             */
+            playCollectSound() {
+                audioManager.playCollect();
+            },
+
+            /**
+             * 游戏主循环 - 碰撞检测
+             */
+            update() {
+                if (!this.isPlaying) return;
+
+                const player = document.getElementById('player');
+                const playerRect = player.getBoundingClientRect();
+
+                // 检测陷阱碰撞
+                this.traps.forEach(trap => {
+                    if (this.checkCollision(playerRect, trap.getBoundingClientRect())) {
+                        audioManager.playHit(); // 播放碰撞音效
+                        this.end(false);
+                    }
+                });
+
+                // 检测道具收集
+                this.items.forEach(item => {
+                    if (item.parentNode && this.checkCollision(playerRect, item.getBoundingClientRect())) {
+                        this.addScore(50);
+                        this.playCollectSound(); // 播放收集音效
+                        item.remove();
+                        this.items = this.items.filter(i => i !== item);
+                    }
+                });
+
+                this.gameLoop = requestAnimationFrame(() => this.update());
+            },
+
+            /**
+             * 碰撞检测
+             */
+            checkCollision(rect1, rect2) {
+                return !(rect1.right < rect2.left || 
+                        rect1.left > rect2.right || 
+                        rect1.bottom < rect2.top || 
+                        rect1.top > rect2.bottom);
+            },
+
+            /**
+             * 游戏结束
+             * @param {boolean} success - 是否成功
+             */
+            end(success) {
+                this.isPlaying = false;
+                clearInterval(this.spawnTimer);
+                clearInterval(this.countdownTimer);
+                cancelAnimationFrame(this.gameLoop);
+                document.onkeydown = null;
+
+                // 清除所有元素
+                document.querySelectorAll('.trap, .item, .tip-popup').forEach(el => el.remove());
+
+                if (success) {
+                    audioManager.playSuccess(); // 播放通关音效
+                    game.completeLevel(1, this.score, true);
+                    game.showResultModal({
+                        icon: '🎉',
+                        title: '关卡完成！',
+                        score: this.score,
+                        knowledge: {
+                            title: '📚 刷单诈骗防范要点',
+                            items: [
+                                '所有刷单都是诈骗，没有例外',
+                                '先垫付后返利的都是骗局',
+                                '高额佣金是诱饵，切勿相信',
+                                '刷单本身就是违法行为'
+                            ]
+                        },
+                        showNext: true,
+                        onNext: 'game.closeModal(); game.startLevel(2)',
+                        showRetry: true,
+                        onRetry: 'game.closeModal(); level1.init()'
+                    });
+                } else {
+                    audioManager.playFail(); // 播放失败音效
+                    game.showResultModal({
+                        icon: '💥',
+                        title: '游戏结束',
+                        score: this.score,
+                        showNext: false,
+                        showRetry: true,
+                        onRetry: 'game.closeModal(); level1.init()'
+                    });
+                }
+            }
+        };
+
+        // ========================================
+        // 关卡2：聊天剧情抉择
+        // ========================================
+        const level2 = {
+            currentScene: 0,
+            correctCount: 0,
+
+            /**
+             * 初始化关卡
+             */
+            init() {
+                this.currentScene = 0;
+                this.correctCount = 0;
+                document.getElementById('chat-container').innerHTML = '';
+                this.showScene();
+            },
+
+            /**
+             * 显示当前场景
+             */
+            showScene() {
+                if (this.currentScene >= LEVEL2_STORY.length) {
+                    this.end();
+                    return;
+                }
+
+                const scene = LEVEL2_STORY[this.currentScene];
+                
+                // 添加NPC消息
+                this.addMessage('other', '👤', scene.npc);
+
+                // 更新进度
+                document.getElementById('level2-progress-text').textContent = 
+                    `${this.currentScene + 1}/${LEVEL2_STORY.length}`;
+
+                // 显示选项
+                this.showChoices(scene.choices, scene.wrongTip);
+            },
+
+            /**
+             * 添加聊天消息
+             */
+            addMessage(type, avatar, text) {
+                const container = document.getElementById('chat-container');
+                const msg = document.createElement('div');
+                msg.className = `chat-message ${type}`;
+                msg.innerHTML = `
+                    <div class="avatar">${avatar}</div>
+                    <div class="message-bubble">${text}</div>
+                `;
+                container.appendChild(msg);
+                container.scrollTop = container.scrollHeight;
+            },
+
+            /**
+             * 显示选项按钮
+             */
+            showChoices(choices, wrongTip) {
+                const container = document.getElementById('choices-container');
+                container.innerHTML = '<h4>请选择你的回复：</h4>';
+
+                choices.forEach((choice, index) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'choice-btn';
+                    btn.textContent = choice.text;
+                    btn.onclick = () => this.makeChoice(choice, wrongTip, btn);
+                    container.appendChild(btn);
+                });
+            },
+
+            /**
+             * 做出选择
+             */
+            makeChoice(choice, wrongTip, btn) {
+                // 播放点击音效
+                audioManager.playClick();
+                
+                // 禁用所有按钮
+                document.querySelectorAll('.choice-btn').forEach(b => b.disabled = true);
+
+                // 标记选择结果
+                if (choice.correct) {
+                    btn.classList.add('correct');
+                    this.correctCount++;
+                    this.addMessage('self', '🛡️', choice.text);
+                } else {
+                    btn.classList.add('wrong');
+                    this.addMessage('self', '🛡️', choice.text);
+                    
+                    // 显示错误提示
+                    setTimeout(() => {
+                        this.addMessage('other', '⚠️', wrongTip);
+                    }, 500);
+                }
+
+                // 进入下一幕
+                setTimeout(() => {
+                    this.currentScene++;
+                    this.showScene();
+                }, 1500);
+            },
+
+            /**
+             * 关卡结束
+             */
+            end() {
+                const score = this.correctCount * 100;
+                const success = this.correctCount >= 3;
+
+                game.completeLevel(2, score, success);
+
+                if (success) {
+                    audioManager.playSuccess(); // 播放通关音效
+                    game.showResultModal({
+                        icon: '💖',
+                        title: '剧情通关！',
+                        score: score,
+                        knowledge: {
+                            title: '📚 网恋诈骗防范要点',
+                            items: [
+                                '网络交友需谨慎，不要轻信陌生人',
+                                '涉及金钱往来务必核实身份',
+                                '警惕"杀猪盘"式情感诈骗',
+                                '未见面之前不要有大额转账'
+                            ]
+                        },
+                        showNext: true,
+                        onNext: 'game.closeModal(); game.startLevel(3)',
+                        showRetry: true,
+                        onRetry: 'game.closeModal(); level2.init()'
+                    });
+                } else {
+                    audioManager.playFail(); // 播放失败音效
+                    game.showResultModal({
+                        icon: '💔',
+                        title: '需要提高警惕',
+                        score: score,
+                        knowledge: {
+                            title: '⚠️ 你陷入了诈骗陷阱',
+                            items: [
+                                '网恋对象借钱99%是诈骗',
+                                '不要被感情冲昏头脑',
+                                '涉及转账务必多方核实',
+                                '建议重新学习反诈知识'
+                            ]
+                        },
+                        showNext: false,
+                        showRetry: true,
+                        onRetry: 'game.closeModal(); level2.init()'
+                    });
+                }
+            }
+        };
+
+        // ========================================
+        // 关卡3：线索找茬
+        // ========================================
+        const level3 = {
+            foundClues: [],
+
+            /**
+             * 初始化关卡
+             */
+            init() {
+                this.foundClues = [];
+                document.getElementById('level3-found').textContent = '0';
+                
+                // 重置所有线索状态
+                document.querySelectorAll('.clue').forEach(el => {
+                    el.classList.remove('found');
+                    const marker = el.querySelector('.clue-marker');
+                    if (marker) marker.remove();
+                });
+            },
+
+            /**
+             * 找到线索
+             * @param {number} clueId - 线索ID
+             */
+            findClue(clueId) {
+                // 检查是否已找到
+                if (this.foundClues.includes(clueId)) return;
+
+                // 播放点击音效
+                audioManager.playClick();
+
+                // 标记为已找到
+                this.foundClues.push(clueId);
+                const clueEl = document.querySelector(`[data-clue="${clueId}"]`);
+                clueEl.classList.add('found');
+
+                // 添加标记
+                const marker = document.createElement('span');
+                marker.className = 'clue-marker';
+                marker.textContent = this.foundClues.length;
+                clueEl.appendChild(marker);
+
+                // 更新计数
+                document.getElementById('level3-found').textContent = this.foundClues.length;
+
+                // 显示解释弹窗
+                this.showClueExplanation(clueId);
+
+                // 检查是否全部找到
+                if (this.foundClues.length === GAME_CONFIG.level3.totalClues) {
+                    setTimeout(() => this.end(), 1000);
+                }
+            },
+
+            /**
+             * 显示线索解释
+             */
+            showClueExplanation(clueId) {
+                const clue = LEVEL3_CLUES[clueId];
+                const container = document.getElementById('modal-container');
+                
+                const modal = document.createElement('div');
+                modal.innerHTML = `
+                    <div class="overlay"></div>
+                    <div class="clue-explanation">
+                        <h4>${clue.title}</h4>
+                        <p>${clue.explain}</p>
+                        <button onclick="game.closeModal()">知道了</button>
+                    </div>
+                `;
+                container.appendChild(modal);
+            },
+
+            /**
+             * 关卡结束
+             */
+            end() {
+                const score = this.foundClues.length * 100;
+                game.completeLevel(3, score, true);
+
+                audioManager.playSuccess(); // 播放通关音效
+                game.showResultModal({
+                    icon: '🔍',
+                    title: '全部找出！',
+                    score: score,
+                    knowledge: {
+                        title: '📚 冒充客服诈骗防范口诀',
+                        items: [
+                            '退款无需先垫付，要求转账是骗子',
+                            '客服不会要密码，索要验证码是骗子',
+                            '陌生链接不要点，钓鱼网站要警惕',
+                            '遇到问题找官方，不要私下加微信'
+                        ]
+                    },
+                    showNext: false,
+                    showRetry: true,
+                    onRetry: 'game.closeModal(); level3.init()'
+                });
+            }
+        };
+
+        // ========================================
+        // 页面加载完成后初始化游戏
+        // ========================================
+        window.onload = () => {
+            game.init();
+        };
+    </script>
+</body>
+</html>
