@@ -1050,8 +1050,20 @@
             </div>
 
             <div class="game-controls">
-                <button class="control-btn" id="btn-left" onmousedown="level1.moveLeft()" ontouchstart="level1.moveLeft()">←</button>
-                <button class="control-btn" id="btn-right" onmousedown="level1.moveRight()" ontouchstart="level1.moveRight()">→</button>
+                <button class="control-btn" id="btn-left" 
+                    onmousedown="level1.startMove('left')" 
+                    onmouseup="level1.stopMove()"
+                    onmouseleave="level1.stopMove()"
+                    ontouchstart="level1.startMove('left')" 
+                    ontouchend="level1.stopMove()"
+                    aria-label="向左移动">←</button>
+                <button class="control-btn" id="btn-right" 
+                    onmousedown="level1.startMove('right')" 
+                    onmouseup="level1.stopMove()"
+                    onmouseleave="level1.stopMove()"
+                    ontouchstart="level1.startMove('right')" 
+                    ontouchend="level1.stopMove()"
+                    aria-label="向右移动">→</button>
             </div>
         </div>
 
@@ -1155,7 +1167,7 @@
         <div id="modal-container"></div>
 
         <!-- 音乐控制按钮 -->
-        <button class="music-toggle" id="music-toggle" onclick="audioManager.toggle()">
+        <button class="music-toggle" id="music-toggle" onclick="audioManager.toggle()" aria-label="切换音乐">
             🔊
         </button>
     </div>
@@ -1262,23 +1274,27 @@
             playTone(frequency, attack, duration, type = 'sine', volume = 0.3) {
                 if (!this.ctx) return;
 
-                const osc = this.ctx.createOscillator();
-                const gain = this.ctx.createGain();
+                try {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
 
-                osc.connect(gain);
-                gain.connect(this.ctx.destination);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
 
-                osc.frequency.value = frequency;
-                osc.type = type;
+                    osc.frequency.value = frequency;
+                    osc.type = type;
 
-                // 设置音量包络
-                const now = this.ctx.currentTime;
-                gain.gain.setValueAtTime(0, now);
-                gain.gain.linearRampToValueAtTime(volume, now + attack);
-                gain.gain.exponentialRampToValueAtTime(0.001, now + attack + duration);
+                    // 设置音量包络
+                    const now = this.ctx.currentTime;
+                    gain.gain.setValueAtTime(0, now);
+                    gain.gain.linearRampToValueAtTime(volume, now + attack);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + attack + duration);
 
-                osc.start(now);
-                osc.stop(now + attack + duration + 0.05);
+                    osc.start(now);
+                    osc.stop(now + attack + duration + 0.05);
+                } catch (e) {
+                    console.warn('音频播放失败:', e);
+                }
             },
 
             /**
@@ -1531,9 +1547,24 @@
              * 从localStorage加载游戏状态
              */
             loadState() {
-                const saved = localStorage.getItem('antiFraudGameState');
-                if (saved) {
-                    this.state = JSON.parse(saved);
+                try {
+                    const saved = localStorage.getItem('antiFraudGameState');
+                    if (saved) {
+                        const parsed = JSON.parse(saved);
+                        // 验证数据结构完整性
+                        if (parsed && typeof parsed === 'object') {
+                            this.state = {
+                                currentLevel: parsed.currentLevel || 0,
+                                unlockedLevels: Array.isArray(parsed.unlockedLevels) ? parsed.unlockedLevels : [1],
+                                completedLevels: Array.isArray(parsed.completedLevels) ? parsed.completedLevels : [],
+                                totalScore: typeof parsed.totalScore === 'number' ? parsed.totalScore : 0,
+                                levelScores: typeof parsed.levelScores === 'object' ? parsed.levelScores : {}
+                            };
+                        }
+                    }
+                } catch (e) {
+                    console.warn('加载游戏状态失败:', e);
+                    // 使用默认状态
                 }
             },
 
@@ -1541,7 +1572,11 @@
              * 保存游戏状态到localStorage
              */
             saveState() {
-                localStorage.setItem('antiFraudGameState', JSON.stringify(this.state));
+                try {
+                    localStorage.setItem('antiFraudGameState', JSON.stringify(this.state));
+                } catch (e) {
+                    console.warn('保存游戏状态失败:', e);
+                }
             },
 
             /**
@@ -1579,6 +1614,7 @@
             updateLevelSelectUI() {
                 for (let i = 1; i <= 3; i++) {
                     const el = document.getElementById(`level-${i}`);
+                    if (!el) continue;
                     el.classList.remove('locked', 'completed');
                     
                     if (this.state.completedLevels.includes(i)) {
@@ -1691,17 +1727,19 @@
              */
             showResultModal(options) {
                 const container = document.getElementById('modal-container');
+                if (!container) return;
+                
                 const modal = document.createElement('div');
                 modal.innerHTML = `
                     <div class="overlay" onclick="game.closeModal()"></div>
                     <div class="result-modal">
-                        <div class="icon">${options.icon}</div>
-                        <h3>${options.title}</h3>
+                        <div class="icon">${this.escapeHtml(options.icon)}</div>
+                        <h3>${this.escapeHtml(options.title)}</h3>
                         ${options.score !== undefined ? `<div class="score-display">${options.score}分</div>` : ''}
                         ${options.knowledge ? `
                             <div class="knowledge-card">
-                                <h4>${options.knowledge.title}</h4>
-                                <ul>${options.knowledge.items.map(item => `<li>${item}</li>`).join('')}</ul>
+                                <h4>${this.escapeHtml(options.knowledge.title)}</h4>
+                                <ul>${options.knowledge.items.map(item => `<li>${this.escapeHtml(item)}</li>`).join('')}</ul>
                             </div>
                         ` : ''}
                         <div class="btn-group">
@@ -1715,10 +1753,25 @@
             },
 
             /**
+             * HTML转义函数，防止XSS攻击
+             * @param {string} text - 需要转义的文本
+             * @returns {string} 转义后的文本
+             */
+            escapeHtml(text) {
+                if (typeof text !== 'string') return '';
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            },
+
+            /**
              * 关闭弹窗
              */
             closeModal() {
-                document.getElementById('modal-container').innerHTML = '';
+                const container = document.getElementById('modal-container');
+                if (container) {
+                    container.innerHTML = '';
+                }
             }
         };
 
@@ -1737,6 +1790,8 @@
             traps: [],
             items: [],
             tipIndex: 0,
+            moveInterval: null,     // 持续移动定时器
+            keysPressed: new Set(), // 已按下的按键
 
             /**
              * 初始化关卡
@@ -1757,21 +1812,51 @@
                 this.traps = [];
                 this.items = [];
                 this.tipIndex = 0;
+                this.keysPressed.clear();
+
+                // 清除之前的定时器
+                this.clearAllTimers();
 
                 // 更新UI
-                document.getElementById('level1-score').textContent = '0';
-                document.getElementById('level1-progress').style.width = '0%';
-                document.getElementById('player').style.left = '50%';
+                const scoreEl = document.getElementById('level1-score');
+                const progressEl = document.getElementById('level1-progress');
+                const playerEl = document.getElementById('player');
+                
+                if (scoreEl) scoreEl.textContent = '0';
+                if (progressEl) progressEl.style.width = '0%';
+                if (playerEl) playerEl.style.left = '50%';
 
                 // 清除旧元素
                 document.querySelectorAll('.trap, .item, .tip-popup').forEach(el => el.remove());
             },
 
             /**
+             * 清除所有定时器
+             */
+            clearAllTimers() {
+                if (this.spawnTimer) {
+                    clearInterval(this.spawnTimer);
+                    this.spawnTimer = null;
+                }
+                if (this.countdownTimer) {
+                    clearInterval(this.countdownTimer);
+                    this.countdownTimer = null;
+                }
+                if (this.moveInterval) {
+                    clearInterval(this.moveInterval);
+                    this.moveInterval = null;
+                }
+                if (this.gameLoop) {
+                    cancelAnimationFrame(this.gameLoop);
+                    this.gameLoop = null;
+                }
+            },
+
+            /**
              * 开始游戏
              */
             start() {
-                // 键盘控制
+                // 键盘控制 - 使用addEventListener替代直接赋值
                 this.setupControls();
 
                 // 开始生成陷阱和道具
@@ -1781,7 +1866,10 @@
                 this.countdownTimer = setInterval(() => {
                     this.timeLeft--;
                     const progress = ((GAME_CONFIG.level1.duration - this.timeLeft) / GAME_CONFIG.level1.duration) * 100;
-                    document.getElementById('level1-progress').style.width = progress + '%';
+                    const progressEl = document.getElementById('level1-progress');
+                    if (progressEl) {
+                        progressEl.style.width = progress + '%';
+                    }
 
                     if (this.timeLeft <= 0) {
                         this.end(true);
@@ -1796,48 +1884,127 @@
              * 设置控制方式
              */
             setupControls() {
-                // 键盘控制
-                document.onkeydown = (e) => {
+                // 键盘事件处理函数
+                this.keydownHandler = (e) => {
                     if (!this.isPlaying) return;
-                    if (e.key === 'ArrowLeft') this.moveLeft();
-                    if (e.key === 'ArrowRight') this.moveRight();
+                    this.keysPressed.add(e.key);
+                    
+                    if (e.key === 'ArrowLeft') {
+                        e.preventDefault();
+                        this.startContinuousMove('left');
+                    } else if (e.key === 'ArrowRight') {
+                        e.preventDefault();
+                        this.startContinuousMove('right');
+                    }
                 };
 
-                // 触摸滑动控制
-                let touchStartX = 0;
+                this.keyupHandler = (e) => {
+                    this.keysPressed.delete(e.key);
+                    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                        if (this.keysPressed.size === 0) {
+                            this.stopMove();
+                        }
+                    }
+                };
+
+                // 触摸事件处理
+                this.touchStartHandler = (e) => {
+                    if (!this.isPlaying) return;
+                    const touch = e.touches[0];
+                    const gameArea = document.getElementById('game-area-level1');
+                    if (gameArea) {
+                        const rect = gameArea.getBoundingClientRect();
+                        const percent = ((touch.clientX - rect.left) / rect.width) * 100;
+                        this.playerX = Math.max(5, Math.min(95, percent));
+                        const playerEl = document.getElementById('player');
+                        if (playerEl) {
+                            playerEl.style.left = this.playerX + '%';
+                        }
+                    }
+                };
+
+                // 添加事件监听器
+                document.addEventListener('keydown', this.keydownHandler);
+                document.addEventListener('keyup', this.keyupHandler);
+
                 const gameArea = document.getElementById('game-area-level1');
-                
-                gameArea.ontouchstart = (e) => {
-                    touchStartX = e.touches[0].clientX;
-                };
-
-                gameArea.ontouchmove = (e) => {
-                    if (!this.isPlaying) return;
-                    e.preventDefault();
-                    const touchX = e.touches[0].clientX;
-                    const rect = gameArea.getBoundingClientRect();
-                    const percent = ((touchX - rect.left) / rect.width) * 100;
-                    this.playerX = Math.max(5, Math.min(95, percent));
-                    document.getElementById('player').style.left = this.playerX + '%';
-                };
+                if (gameArea) {
+                    gameArea.addEventListener('touchstart', this.touchStartHandler, { passive: true });
+                    gameArea.addEventListener('touchmove', (e) => {
+                        if (!this.isPlaying) return;
+                        e.preventDefault();
+                        this.touchStartHandler(e);
+                    }, { passive: false });
+                }
             },
 
             /**
-             * 向左移动
+             * 开始持续移动（用于长按）
+             * @param {string} direction - 移动方向 'left' 或 'right'
+             */
+            startContinuousMove(direction) {
+                this.stopMove(); // 先停止之前的移动
+                const speed = GAME_CONFIG.level1.playerSpeed;
+                
+                this.moveInterval = setInterval(() => {
+                    if (!this.isPlaying) {
+                        this.stopMove();
+                        return;
+                    }
+                    
+                    if (direction === 'left') {
+                        this.playerX = Math.max(5, this.playerX - speed);
+                    } else {
+                        this.playerX = Math.min(95, this.playerX + speed);
+                    }
+                    
+                    const playerEl = document.getElementById('player');
+                    if (playerEl) {
+                        playerEl.style.left = this.playerX + '%';
+                    }
+                }, 50); // 每50ms更新一次位置
+            },
+
+            /**
+             * 开始移动（按钮按下）
+             * @param {string} direction - 移动方向
+             */
+            startMove(direction) {
+                this.startContinuousMove(direction);
+            },
+
+            /**
+             * 停止移动
+             */
+            stopMove() {
+                if (this.moveInterval) {
+                    clearInterval(this.moveInterval);
+                    this.moveInterval = null;
+                }
+            },
+
+            /**
+             * 向左移动（单次）
              */
             moveLeft() {
                 if (!this.isPlaying) return;
                 this.playerX = Math.max(5, this.playerX - GAME_CONFIG.level1.playerSpeed);
-                document.getElementById('player').style.left = this.playerX + '%';
+                const playerEl = document.getElementById('player');
+                if (playerEl) {
+                    playerEl.style.left = this.playerX + '%';
+                }
             },
 
             /**
-             * 向右移动
+             * 向右移动（单次）
              */
             moveRight() {
                 if (!this.isPlaying) return;
                 this.playerX = Math.min(95, this.playerX + GAME_CONFIG.level1.playerSpeed);
-                document.getElementById('player').style.left = this.playerX + '%';
+                const playerEl = document.getElementById('player');
+                if (playerEl) {
+                    playerEl.style.left = this.playerX + '%';
+                }
             },
 
             /**
@@ -1847,6 +2014,8 @@
                 if (!this.isPlaying) return;
 
                 const gameArea = document.getElementById('game-area-level1');
+                if (!gameArea) return;
+
                 const isTrap = Math.random() > 0.3;  // 70%概率生成陷阱
 
                 if (isTrap) {
@@ -1861,7 +2030,7 @@
                     this.traps.push(trap);
 
                     // 自动清理
-                    setTimeout(() => {
+                    const removeTimeout = setTimeout(() => {
                         if (trap.parentNode) {
                             trap.remove();
                             this.traps = this.traps.filter(t => t !== trap);
@@ -1871,6 +2040,9 @@
                             this.showTip();
                         }
                     }, GAME_CONFIG.level1.trapSpeed * 1000);
+                    
+                    // 存储timeout ID以便清理
+                    trap._removeTimeout = removeTimeout;
                 } else {
                     // 生成道具
                     const item = document.createElement('div');
@@ -1881,12 +2053,14 @@
                     gameArea.appendChild(item);
                     this.items.push(item);
 
-                    setTimeout(() => {
+                    const removeTimeout = setTimeout(() => {
                         if (item.parentNode) {
                             item.remove();
                             this.items = this.items.filter(i => i !== item);
                         }
                     }, (GAME_CONFIG.level1.trapSpeed + 1) * 1000);
+                    
+                    item._removeTimeout = removeTimeout;
                 }
             },
 
@@ -1900,7 +2074,10 @@
                 const popup = document.createElement('div');
                 popup.className = 'tip-popup';
                 popup.textContent = '💡 ' + tip;
-                document.getElementById('level1-page').appendChild(popup);
+                const levelPage = document.getElementById('level1-page');
+                if (levelPage) {
+                    levelPage.appendChild(popup);
+                }
 
                 setTimeout(() => popup.remove(), 4000);
             },
@@ -1910,7 +2087,10 @@
              */
             addScore(points) {
                 this.score += points;
-                document.getElementById('level1-score').textContent = this.score;
+                const scoreEl = document.getElementById('level1-score');
+                if (scoreEl) {
+                    scoreEl.textContent = this.score;
+                }
             },
 
             /**
@@ -1927,25 +2107,46 @@
                 if (!this.isPlaying) return;
 
                 const player = document.getElementById('player');
+                if (!player) return;
+
                 const playerRect = player.getBoundingClientRect();
 
                 // 检测陷阱碰撞
-                this.traps.forEach(trap => {
+                for (let i = this.traps.length - 1; i >= 0; i--) {
+                    const trap = this.traps[i];
+                    if (!trap.parentNode) {
+                        this.traps.splice(i, 1);
+                        continue;
+                    }
+                    
                     if (this.checkCollision(playerRect, trap.getBoundingClientRect())) {
                         audioManager.playHit(); // 播放碰撞音效
                         this.end(false);
+                        return;
                     }
-                });
+                }
 
                 // 检测道具收集
-                this.items.forEach(item => {
-                    if (item.parentNode && this.checkCollision(playerRect, item.getBoundingClientRect())) {
+                for (let i = this.items.length - 1; i >= 0; i--) {
+                    const item = this.items[i];
+                    if (!item.parentNode) {
+                        this.items.splice(i, 1);
+                        continue;
+                    }
+                    
+                    if (this.checkCollision(playerRect, item.getBoundingClientRect())) {
                         this.addScore(50);
                         this.playCollectSound(); // 播放收集音效
+                        
+                        // 清理timeout
+                        if (item._removeTimeout) {
+                            clearTimeout(item._removeTimeout);
+                        }
+                        
                         item.remove();
-                        this.items = this.items.filter(i => i !== item);
+                        this.items.splice(i, 1);
                     }
-                });
+                }
 
                 this.gameLoop = requestAnimationFrame(() => this.update());
             },
@@ -1961,18 +2162,44 @@
             },
 
             /**
+             * 清理事件监听器
+             */
+            cleanupEventListeners() {
+                if (this.keydownHandler) {
+                    document.removeEventListener('keydown', this.keydownHandler);
+                }
+                if (this.keyupHandler) {
+                    document.removeEventListener('keyup', this.keyupHandler);
+                }
+                
+                const gameArea = document.getElementById('game-area-level1');
+                if (gameArea && this.touchStartHandler) {
+                    gameArea.removeEventListener('touchstart', this.touchStartHandler);
+                }
+            },
+
+            /**
              * 游戏结束
              * @param {boolean} success - 是否成功
              */
             end(success) {
                 this.isPlaying = false;
-                clearInterval(this.spawnTimer);
-                clearInterval(this.countdownTimer);
-                cancelAnimationFrame(this.gameLoop);
-                document.onkeydown = null;
+                this.clearAllTimers();
+                this.cleanupEventListeners();
 
-                // 清除所有元素
-                document.querySelectorAll('.trap, .item, .tip-popup').forEach(el => el.remove());
+                // 清理所有元素及其timeout
+                [...this.traps, ...this.items].forEach(el => {
+                    if (el._removeTimeout) {
+                        clearTimeout(el._removeTimeout);
+                    }
+                    if (el.parentNode) {
+                        el.remove();
+                    }
+                });
+                this.traps = [];
+                this.items = [];
+
+                document.querySelectorAll('.tip-popup').forEach(el => el.remove());
 
                 if (success) {
                     audioManager.playSuccess(); // 播放通关音效
@@ -2022,7 +2249,10 @@
             init() {
                 this.currentScene = 0;
                 this.correctCount = 0;
-                document.getElementById('chat-container').innerHTML = '';
+                const chatContainer = document.getElementById('chat-container');
+                if (chatContainer) {
+                    chatContainer.innerHTML = '';
+                }
                 this.showScene();
             },
 
@@ -2041,8 +2271,10 @@
                 this.addMessage('other', '👤', scene.npc);
 
                 // 更新进度
-                document.getElementById('level2-progress-text').textContent = 
-                    `${this.currentScene + 1}/${LEVEL2_STORY.length}`;
+                const progressEl = document.getElementById('level2-progress-text');
+                if (progressEl) {
+                    progressEl.textContent = `${this.currentScene + 1}/${LEVEL2_STORY.length}`;
+                }
 
                 // 显示选项
                 this.showChoices(scene.choices, scene.wrongTip);
@@ -2053,12 +2285,22 @@
              */
             addMessage(type, avatar, text) {
                 const container = document.getElementById('chat-container');
+                if (!container) return;
+                
                 const msg = document.createElement('div');
                 msg.className = `chat-message ${type}`;
-                msg.innerHTML = `
-                    <div class="avatar">${avatar}</div>
-                    <div class="message-bubble">${text}</div>
-                `;
+                
+                // 使用textContent避免XSS
+                const avatarDiv = document.createElement('div');
+                avatarDiv.className = 'avatar';
+                avatarDiv.textContent = avatar;
+                
+                const bubble = document.createElement('div');
+                bubble.className = 'message-bubble';
+                bubble.textContent = text;
+                
+                msg.appendChild(avatarDiv);
+                msg.appendChild(bubble);
                 container.appendChild(msg);
                 container.scrollTop = container.scrollHeight;
             },
@@ -2068,9 +2310,11 @@
              */
             showChoices(choices, wrongTip) {
                 const container = document.getElementById('choices-container');
+                if (!container) return;
+                
                 container.innerHTML = '<h4>请选择你的回复：</h4>';
 
-                choices.forEach((choice, index) => {
+                choices.forEach((choice) => {
                     const btn = document.createElement('button');
                     btn.className = 'choice-btn';
                     btn.textContent = choice.text;
@@ -2087,7 +2331,7 @@
                 audioManager.playClick();
                 
                 // 禁用所有按钮
-                document.querySelectorAll('.choice-btn').forEach(b => b.disabled = true);
+                container.querySelectorAll('.choice-btn').forEach(b => b.disabled = true);
 
                 // 标记选择结果
                 if (choice.correct) {
@@ -2174,7 +2418,10 @@
              */
             init() {
                 this.foundClues = [];
-                document.getElementById('level3-found').textContent = '0';
+                const foundEl = document.getElementById('level3-found');
+                if (foundEl) {
+                    foundEl.textContent = '0';
+                }
                 
                 // 重置所有线索状态
                 document.querySelectorAll('.clue').forEach(el => {
@@ -2198,16 +2445,21 @@
                 // 标记为已找到
                 this.foundClues.push(clueId);
                 const clueEl = document.querySelector(`[data-clue="${clueId}"]`);
-                clueEl.classList.add('found');
+                if (clueEl) {
+                    clueEl.classList.add('found');
 
-                // 添加标记
-                const marker = document.createElement('span');
-                marker.className = 'clue-marker';
-                marker.textContent = this.foundClues.length;
-                clueEl.appendChild(marker);
+                    // 添加标记
+                    const marker = document.createElement('span');
+                    marker.className = 'clue-marker';
+                    marker.textContent = this.foundClues.length;
+                    clueEl.appendChild(marker);
+                }
 
                 // 更新计数
-                document.getElementById('level3-found').textContent = this.foundClues.length;
+                const foundEl = document.getElementById('level3-found');
+                if (foundEl) {
+                    foundEl.textContent = this.foundClues.length;
+                }
 
                 // 显示解释弹窗
                 this.showClueExplanation(clueId);
@@ -2223,14 +2475,17 @@
              */
             showClueExplanation(clueId) {
                 const clue = LEVEL3_CLUES[clueId];
+                if (!clue) return;
+                
                 const container = document.getElementById('modal-container');
+                if (!container) return;
                 
                 const modal = document.createElement('div');
                 modal.innerHTML = `
                     <div class="overlay"></div>
                     <div class="clue-explanation">
-                        <h4>${clue.title}</h4>
-                        <p>${clue.explain}</p>
+                        <h4>${game.escapeHtml(clue.title)}</h4>
+                        <p>${game.escapeHtml(clue.explain)}</p>
                         <button onclick="game.closeModal()">知道了</button>
                     </div>
                 `;
@@ -2268,9 +2523,16 @@
         // ========================================
         // 页面加载完成后初始化游戏
         // ========================================
-        window.onload = () => {
+        window.addEventListener('load', () => {
             game.init();
-        };
+        });
+
+        // 页面卸载时清理资源
+        window.addEventListener('beforeunload', () => {
+            level1.clearAllTimers();
+            level1.cleanupEventListeners();
+            audioManager.stopBGM();
+        });
     </script>
 </body>
 </html>
