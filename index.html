@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>反诈大冒险 - 防范电信诈骗互动游戏</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <!-- ========================================
+             首页
+             ======================================== -->
+        <div class="page home-page active" id="home-page">
+            <div class="game-logo">🛡️</div>
+            <h1 class="game-title">反诈大冒险</h1>
+            <p class="game-subtitle">防范电信诈骗 · 守护财产安全</p>
+            
+            <div class="game-intro">
+                <h3>🎮 游戏介绍</h3>
+                <p>
+                    欢迎来到反诈大冒险！这是一款融合反诈知识的互动游戏。
+                    你将通过三个趣味关卡，体验不同类型的诈骗场景，
+                    学习识别诈骗套路，提升防范意识。
+                    <br><br>
+                    游戏不采用枯燥的问答形式，而是通过沉浸式玩法让你在闯关中自然掌握反诈知识！
+                </p>
+            </div>
+
+            <div class="level-preview">
+                <div class="level-card">
+                    <div class="icon">🏃</div>
+                    <div class="name">躲避陷阱</div>
+                </div>
+                <div class="level-card">
+                    <div class="icon">💬</div>
+                    <div class="name">剧情抉择</div>
+                </div>
+                <div class="level-card">
+                    <div class="icon">🔍</div>
+                    <div class="name">线索找茬</div>
+                </div>
+            </div>
+
+            <button class="btn-primary" onclick="audioManager.playClick(); game.showLevelSelect()">开始游戏</button>
+
+            <div class="progress-info" id="progress-info">
+                <!-- 动态显示游戏进度 -->
+            </div>
+        </div>
+
+        <!-- ========================================
+             关卡选择页
+             ======================================== -->
+        <div class="page level-select-page" id="level-select-page">
+            <div class="page-header">
+                <h2>选择关卡</h2>
+                <p>完成前一关解锁下一关</p>
+            </div>
+
+            <div class="levels-grid">
+                <div class="level-item" id="level-1" onclick="game.startLevel(1)">
+                    <span class="level-number">1</span>
+                    <div class="level-name">刷单诈骗陷阱</div>
+                    <div class="level-desc">躲避诈骗陷阱，收集反诈道具</div>
+                </div>
+
+                <div class="level-item locked" id="level-2" onclick="game.startLevel(2)">
+                    <span class="level-number">2</span>
+                    <div class="level-name">网恋诈骗剧情</div>
+                    <div class="level-desc">模拟聊天场景，做出正确抉择</div>
+                </div>
+
+                <div class="level-item locked" id="level-3" onclick="game.startLevel(3)">
+                    <span class="level-number">3</span>
+                    <div class="level-name">客服诈骗找茬</div>
+                    <div class="level-desc">找出聊天截图中的诈骗线索</div>
+                </div>
+            </div>
+
+            <button class="back-btn" onclick="audioManager.playClick(); game.showHome()">← 返回首页</button>
+        </div>
+
+        <!-- ========================================
+             关卡1：难度选择
+             ======================================== -->
+        <div class="page level1-select-page" id="level1-select-page">
+            <div class="page-header">
+                <h2>关卡1：选择难度</h2>
+                <p>躲避刷单诈骗陷阱</p>
+            </div>
+
+            <div class="difficulty-options">
+                <div class="difficulty-card easy" onclick="level1.startWithDifficulty('easy')">
+                    <div class="difficulty-icon">😊</div>
+                    <div class="difficulty-name">简单模式</div>
+                    <div class="difficulty-desc">陷阱速度慢，适合新手体验</div>
+                    <div class="difficulty-detail">• 陷阱下落速度：慢<br>• 生成频率：低<br>• 游戏时长：30秒</div>
+                </div>
+
+                <div class="difficulty-card medium" onclick="level1.startWithDifficulty('medium')">
+                    <div class="difficulty-icon">😅</div>
+                    <div class="difficulty-name">中等模式</div>
+                    <div class="difficulty-desc">正常速度，有一定挑战性</div>
+                    <div class="difficulty-detail">• 陷阱下落速度：中等<br>• 生成频率：中等<br>• 游戏时长：45秒</div>
+                </div>
+
+                <div class="difficulty-card hard" onclick="level1.startWithDifficulty('hard')">
+                    <div class="difficulty-icon">😰</div>
+                    <div class="difficulty-name">困难模式</div>
+                    <div class="difficulty-desc">速度快，考验反应能力</div>
+                    <div class="difficulty-detail">• 陷阱下落速度：快<br>• 生成频率：高<br>• 游戏时长：60秒</div>
+                </div>
+            </div>
+
+            <button class="back-btn" onclick="audioManager.playClick(); game.showLevelSelect()">← 返回关卡</button>
+        </div>
+
+        <!-- ========================================
+             关卡1：陷阱躲避
+             ======================================== -->
+        <div class="page level1-page" id="level1-page">
+            <div class="progress-bar">
+                <div class="progress-fill" id="level1-progress" style="width: 0%"></div>
+            </div>
+
+            <div class="game-header">
+                <div class="title">关卡1：躲避诈骗陷阱 <span id="level1-difficulty-label" class="difficulty-label"></span></div>
+                <div class="score">得分: <span id="level1-score">0</span></div>
+            </div>
+
+            <div class="game-area" id="game-area-level1">
+                <div class="player" id="player">🛡️</div>
+            </div>
+
+            <div class="game-controls">
+                <button class="control-btn" id="btn-left" onmousedown="level1.moveLeft()" ontouchstart="level1.moveLeft()">←</button>
+                <button class="control-btn" id="btn-right" onmousedown="level1.moveRight()" ontouchstart="level1.moveRight()">→</button>
+            </div>
+        </div>
+
+        <!-- ========================================
+             关卡2：聊天剧情
+             ======================================== -->
+        <div class="page level2-page" id="level2-page">
+            <div class="game-header">
+                <div class="title">关卡2：网恋诈骗抉择</div>
+                <div class="score">进度: <span id="level2-progress-text">1/5</span></div>
+            </div>
+
+            <div class="chat-container" id="chat-container">
+                <!-- 聊天消息动态生成 -->
+            </div>
+
+            <div class="choices-container" id="choices-container">
+                <h4>请选择你的回复：</h4>
+                <!-- 选项按钮动态生成 -->
+            </div>
+        </div>
+
+        <!-- ========================================
+             关卡3：线索找茬
+             ======================================== -->
+        <div class="page level3-page" id="level3-page">
+            <div class="game-header">
+                <div class="title">关卡3：找出诈骗线索</div>
+                <div class="score">
+                    <span class="timer">⏱️ <span id="level3-timer">00:00</span></span>
+                    <span class="found-count">找到: <span id="level3-found">0</span>/7</span>
+                </div>
+            </div>
+
+            <div class="find-game-area">
+                <div class="screenshot-container" id="screenshot-container">
+                    <div class="screenshot-header">
+                        <div class="avatar">👤</div>
+                        <div class="info">
+                            <h4>淘宝客服-小美</h4>
+                            <p>在线</p>
+                        </div>
+                    </div>
+                    <div class="chat-content" id="find-chat-content">
+                        <p onclick="level3.handleParagraphClick(this, -1)">您好，我是淘宝客服小美。检测到您购买的商品存在质量问题。</p>
+                        <p class="clue" data-clue="0" onclick="level3.findClue(0)">
+                            我们将为您办理退款，但需要您先缴纳<span style="color:#f5576c;font-weight:bold;">500元保证金</span>到我们的安全账户，退款成功后立即返还。
+                        </p>
+                        <p class="clue" data-clue="1" onclick="level3.findClue(1)">
+                            请您提供<span style="color:#f5576c;font-weight:bold;">银行卡号和验证码</span>，我们好进行退款操作。
+                        </p>
+                        <p class="clue" data-clue="2" onclick="level3.findClue(2)">
+                            为了加快处理，请直接转账到<span style="color:#f5576c;font-weight:bold;">私人账户：6222 **** **** 8888</span>，备注您的姓名。
+                        </p>
+                        <p onclick="level3.handleParagraphClick(this, -1)">系统显示您的账户存在异常，需要激活才能退款。</p>
+                        <p class="clue" data-clue="3" onclick="level3.findClue(3)">
+                            请点击这个链接<span style="color:#667eea;text-decoration:underline;">http://taobao-refund.xyz</span>填写退款信息。
+                        </p>
+                        <p class="clue" data-clue="4" onclick="level3.findClue(4)">
+                            时间紧迫，必须在<span style="color:#f5576c;font-weight:bold;">30分钟内</span>完成操作，否则退款通道将关闭。
+                        </p>
+                        <p class="clue" data-clue="5" onclick="level3.findClue(5)">
+                            不要联系官方客服，这是<span style="color:#f5576c;font-weight:bold;">内部特殊通道</span>，走正常渠道无法退款。
+                        </p>
+                        <p onclick="level3.handleParagraphClick(this, -1)">如果您不配合，我们将冻结您的账户并报警处理。</p>
+                        <p class="clue" data-clue="6" onclick="level3.findClue(6)">
+                            请加我微信<span style="color:#667eea;font-weight:bold;">kefu888999</span>详谈，电话里说不清楚。
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="find-progress">
+                <h4>🔍 找出所有诈骗线索</h4>
+                <p>点击聊天内容中可疑的地方，找出7个诈骗特征</p>
+                <p class="hint-text">💡 提示：错误点击会扣除时间，仔细观察再点击！</p>
+            </div>
+        </div>
+
+        <!-- ========================================
+             通关页面
+             ======================================== -->
+        <div class="page complete-page" id="complete-page">
+            <div class="trophy">🏆</div>
+            <h2>恭喜通关！</h2>
+            <div class="final-score" id="final-score">0</div>
+            <p>你已完成所有反诈关卡</p>
+
+            <div class="complete-summary">
+                <h3>📝 反诈知识总结</h3>
+                <div class="tip-item">
+                    <strong>刷单诈骗：</strong>所有刷单都是诈骗，不存在无成本高返利，切勿垫付资金。
+                </div>
+                <div class="tip-item">
+                    <strong>网恋诈骗：</strong>网络交友需谨慎，涉及转账要核实，警惕"杀猪盘"套路。
+                </div>
+                <div class="tip-item">
+                    <strong>客服诈骗：</strong>正规客服不会索要密码验证码，不会要求转账到私人账户。
+                </div>
+                <div class="tip-item">
+                    <strong>通用口诀：</strong>未知链接不点击、陌生来电不轻信、个人信息不透露、转账汇款多核实。
+                </div>
+            </div>
+
+            <button class="btn-primary" onclick="audioManager.playClick(); game.resetGame()">重新挑战</button>
+        </div>
+
+        <!-- 弹窗容器 -->
+        <div id="modal-container"></div>
+
+        <!-- 音乐控制按钮 -->
+        <button class="music-toggle" id="music-toggle" onclick="audioManager.toggle()">
+            🔊
+        </button>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
