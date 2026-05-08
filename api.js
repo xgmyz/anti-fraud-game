@@ -62,5 +62,12 @@ const api = {
       method: 'POST',
       body: JSON.stringify(progress)
     })
+  },
+  leaderboard: {
+    get: (type = 'global', limit = 50) => request(`/leaderboard?type=${type}&limit=${limit}`),
+    submit: (total_score, total_time, difficulty) => request('/leaderboard', {
+      method: 'POST',
+      body: JSON.stringify({ total_score, total_time, difficulty })
+    })
   }
 };

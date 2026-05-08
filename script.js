@@ -638,6 +638,38 @@ const game = {
         });
     },
 
+    async submitLeaderboard() {
+        if (!this.currentUser) return;
+        await api.leaderboard.submit(this.state.totalScore, 0, 'medium');
+    },
+
+    async showLeaderboard() {
+        audioManager.playClick();
+        const res = await api.leaderboard.get('global', 20);
+        let html = '';
+        if (res.success && res.data.records.length > 0) {
+            html = res.data.records.map((r, i) => `
+                <div class="lb-row ${r.username === (this.currentUser?.username) ? 'lb-self' : ''}">
+                    <span class="lb-rank">${i + 1}</span>
+                    <span class="lb-name">${r.nickname || r.username}</span>
+                    <span class="lb-score">${r.total_score}分</span>
+                </div>
+            `).join('');
+        } else {
+            html = '<p style="text-align:center;color:#999;">暂无数据</p>';
+        }
+
+        const container = document.getElementById('modal-container');
+        container.innerHTML = `
+            <div class="overlay" onclick="game.closeModal()"></div>
+            <div class="leaderboard-modal">
+                <h3>🏆 排行榜</h3>
+                <div class="lb-list">${html}</div>
+                <button class="btn-retry" onclick="game.closeModal()">关闭</button>
+            </div>
+        `;
+    },
+
     /**
      * 从localStorage加载游戏状态
      */
@@ -767,9 +799,9 @@ const game = {
             await this.syncProgress();
 
             // 检查是否全部通关（不再自动跳转，由用户在结算弹窗中点击）
-            // if (this.state.completedLevels.length === 3) {
-            //     setTimeout(() => this.showCompletePage(), 500);
-            // }
+            if (this.state.completedLevels.length === 3) {
+                this.submitLeaderboard();
+            }
         }
     },
 
