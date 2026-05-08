@@ -329,6 +329,34 @@ const TRAP_DANGERS = {
     }
 };
 
+// 关卡1正确知识道具（绿色下落物）
+const GOOD_ITEMS = {
+    '拒绝垫付': {
+        title: '✅ 正确做法：拒绝垫付',
+        tip: '任何要求先交钱的兼职都是诈骗，果断拒绝！'
+    },
+    '核实身份': {
+        title: '✅ 正确做法：核实身份',
+        tip: '遇到"客服"主动来电，挂断后通过官方渠道核实！'
+    },
+    '不点链接': {
+        title: '✅ 正确做法：不点陌生链接',
+        tip: '陌生短信里的链接一律不点，防止钓鱼网站！'
+    },
+    '保护验证码': {
+        title: '✅ 正确做法：保护验证码',
+        tip: '验证码=密码，绝不告诉任何人，包括"客服"！'
+    },
+    '官方渠道': {
+        title: '✅ 正确做法：走官方渠道',
+        tip: '退款、理赔等必须通过官方APP或网站办理！'
+    },
+    '及时报警': {
+        title: '✅ 正确做法：及时报警',
+        tip: '发现被骗立即拨打110或96110反诈专线！'
+    }
+};
+
 // 关卡1反诈知识提示
 const LEVEL1_TIPS = [
     "刷单都是诈骗，没有无成本高返利！",
@@ -341,79 +369,80 @@ const LEVEL1_TIPS = [
     "任何垫付要求都是诈骗！"
 ];
 
-// 关卡2剧情数据
+// 关卡2剧情数据 - 精心设计的"杀猪盘"套路
+// 正确选项：保持礼貌但始终有警惕心，不轻易透露个人信息，不轻信陌生人推荐
 const LEVEL2_STORY = [
     {
-        npc: "嗨，在吗？我是通过交友平台看到你的资料的。",
+        npc: "你好，看到你发的旅行照片，那个地方我也一直想去！可以交流一下攻略吗？",
         choices: [
-            { text: "你好，请问有什么事？", correct: true },
-            { text: "直接发红包表示诚意", correct: false }
+            { text: "不好意思，我不太习惯和陌生人聊这些", correct: true },
+            { text: "可以啊，那里的海景确实很棒，你计划什么时候去？", correct: false }
         ],
-        wrongTip: "刚认识就发红包？这可能是诈骗分子的套路！"
+        wrongTip: "⚠️ 对陌生人过度热情可能会暴露太多个人信息，保持适当距离更安全！"
     },
     {
-        npc: "我觉得你很有趣，可以认识一下吗？我在国外做金融投资。",
+        npc: "哈哈，我打算下个月去！对了，看你朋友圈你也在做设计？我是做UI的，同行啊！",
         choices: [
-            { text: "可以聊聊，但我不投资", correct: true },
-            { text: "听起来很厉害，带带我", correct: false }
+            { text: "是吗？不过我不太喜欢在网上聊工作的事", correct: true },
+            { text: "真的吗？太巧了！你做了多久了？", correct: false }
         ],
-        wrongTip: "网恋对象推荐投资？这是典型的'杀猪盘'诈骗！"
+        wrongTip: "⚠️ 对方在试图通过'同行'身份拉近距离，不要轻易相信陌生人的自我介绍！"
     },
     {
-        npc: "我们聊得这么投机，你有考虑过我们的未来吗？",
+        npc: "做了3年啦，最近有点迷茫，想转行。你呢？一直做这行吗？",
         choices: [
-            { text: "先见面了解再说", correct: true },
-            { text: "我相信你，听你的安排", correct: false }
+            { text: "嗯...我们好像不太熟，这些就不聊了吧", correct: true },
+            { text: "我也是，这行竞争挺大的。你平时有什么爱好？", correct: false }
         ],
-        wrongTip: "网恋未见面就谈未来？保持理性，谨防被骗！"
+        wrongTip: "⚠️ 骗子会通过聊职业规划、爱好等话题培养感情，不要对陌生人掏心掏肺！"
     },
     {
-        npc: "我这边有个紧急情况，需要2万元周转，你能帮我吗？",
+        npc: "我喜欢摄影和健身，周末经常去爬山。你呢？",
         choices: [
-            { text: "抱歉，我们还没见过面", correct: true },
-            { text: "好，我马上转给你", correct: false }
+            { text: "抱歉，我不太习惯和网友聊太多私事", correct: true },
+            { text: "我也喜欢摄影！周末可以一起去拍", correct: false }
         ],
-        wrongTip: "网恋对象借钱？99%是诈骗！务必核实身份！"
+        wrongTip: "⚠️ 不要轻易和陌生网友约定见面，更不要透露自己的兴趣爱好、行踪等隐私！"
     },
     {
-        npc: "你不帮我就是不爱我，我对你太失望了！",
+        npc: "太好了！对了，我最近在学习理财，有老师带，收益还不错。你要不要了解一下？",
         choices: [
-            { text: "感情不该用金钱衡量", correct: true },
-            { text: "别生气，我这就转", correct: false }
+            { text: "不用了，我不信网上陌生人推荐的理财", correct: true },
+            { text: "真的吗？收益多少？我也想赚钱", correct: false }
         ],
-        wrongTip: "用感情威胁转账？这是情感操控，坚决拒绝！"
+        wrongTip: "⚠️ 这就是典型的'杀猪盘'套路！前期建立信任，后期诱导投资！"
     }
 ];
 
-// 关卡3线索解释
+// 关卡3线索解释 - 清晰无争议
 const LEVEL3_CLUES = [
     {
-        title: "⚠️ 要求先垫付",
-        explain: "正规退款不会要求先缴纳保证金或垫付资金，这是诈骗的典型特征！"
+        title: "❌ 要求先交保证金",
+        explain: "任何退款、理赔都不需要你先交钱！'先交保证金'是诈骗的标志性话术，正规平台绝不会要求用户先转账才能退款。"
     },
     {
-        title: "⚠️ 索要银行卡号和验证码",
-        explain: "正规客服绝不会索要银行卡号、验证码等敏感信息，这是盗取账户的常见手段！"
+        title: "❌ 索要银行卡密码和验证码",
+        explain: "银行卡密码和短信验证码是你账户的最后防线！正规客服绝不会索要这些信息，一旦泄露，账户里的钱会被立刻转走！"
     },
     {
-        title: "⚠️ 要求转账到私人账户",
-        explain: "正规退款原路返回，不会要求转账到私人银行账户！"
+        title: "❌ 要求转账到私人账户",
+        explain: "正规退款一定是原路返回到你的支付账户！任何要求转账到'私人账户''安全账户'的都是诈骗，这是铁律！"
     },
     {
-        title: "⚠️ 可疑链接",
-        explain: "非官方域名的链接可能是钓鱼网站，会窃取你的账户信息！"
+        title: "❌ 发送非官方链接",
+        explain: "taobao-refund.xyz 不是淘宝官方域名！诈骗分子会制作仿冒网站骗取你的账号密码。只信任官方APP和官网！"
     },
     {
-        title: "⚠️ 制造紧迫感",
-        explain: "诈骗分子常用'限时''通道关闭'等话术制造紧迫感，让你来不及思考！"
+        title: "❌ 用'限时'制造紧迫感",
+        explain: "'30分钟内必须完成''通道即将关闭'是诈骗分子的惯用心理战术，目的是让你来不及思考就转账。正规退款从不会限时！"
     },
     {
-        title: "⚠️ 声称内部特殊通道",
-        explain: "正规退款没有'内部通道'，要求绕过官方渠道的都是诈骗！"
+        title: "❌ 声称'内部特殊通道'",
+        explain: "正规平台没有所谓的'内部通道''特殊渠道'！所有退款都必须通过官方流程办理，要求绕过官方渠道100%是诈骗。"
     },
     {
-        title: "⚠️ 要求私下加微信",
-        explain: "正规客服不会要求加微信私聊，脱离平台监管的都是诈骗！"
+        title: "❌ 要求脱离平台加微信",
+        explain: "正规客服绝不会要求你加微信、QQ私下联系！脱离平台监管后，你的权益无法保障，诈骗风险极高。"
     }
 ];
 
@@ -430,14 +459,17 @@ const game = {
         levelScores: {}         // 各关卡得分
     },
 
+    currentUser: null,
+
     /**
      * 初始化游戏
      * 从localStorage读取保存的游戏进度
      */
-    init() {
+    async init() {
         this.loadState();
         this.updateHomeProgress();
-        
+        await this.checkLogin();
+
         // 初始化音频（需要用户交互后才能播放）
         document.addEventListener('click', () => {
             if (!audioManager.ctx) {
@@ -448,6 +480,162 @@ const game = {
                 audioManager.startBGM();
             }
         }, { once: true });
+    },
+
+    async checkLogin() {
+        const token = getToken();
+        if (token) {
+            const res = await api.auth.me();
+            if (res.success) {
+                this.currentUser = res.data.user;
+                this.updateAuthUI();
+                await this.loadServerProgress();
+            } else {
+                removeToken();
+            }
+        }
+    },
+
+    updateAuthUI() {
+        const bar = document.getElementById('auth-bar');
+        if (this.currentUser) {
+            bar.innerHTML = `
+                <span id="user-info">👤 ${this.currentUser.nickname || this.currentUser.username}</span>
+                <button class="btn-small" onclick="game.logout()">退出</button>
+            `;
+        } else {
+            bar.innerHTML = `
+                <span id="user-info">未登录</span>
+                <button class="btn-small" onclick="game.showLoginModal()">登录</button>
+                <button class="btn-small" onclick="game.showRegisterModal()">注册</button>
+            `;
+        }
+    },
+
+    async logout() {
+        removeToken();
+        this.currentUser = null;
+        this.updateAuthUI();
+        this.state = { currentLevel: 0, unlockedLevels: [1], completedLevels: [], totalScore: 0, levelScores: {} };
+        this.saveState();
+        this.updateHomeProgress();
+    },
+
+    showLoginModal() {
+        const container = document.getElementById('modal-container');
+        container.innerHTML = `
+            <div class="overlay" onclick="game.closeModal()"></div>
+            <div class="auth-modal">
+                <h3>🔐 用户登录</h3>
+                <input type="text" id="login-username" placeholder="用户名" maxlength="20">
+                <input type="password" id="login-password" placeholder="密码" maxlength="20">
+                <div class="auth-error" id="login-error"></div>
+                <button class="btn-primary" onclick="game.doLogin()">登录</button>
+                <p class="auth-tip">还没有账号？<a onclick="game.closeModal(); game.showRegisterModal()">立即注册</a></p>
+            </div>
+        `;
+    },
+
+    showRegisterModal() {
+        const container = document.getElementById('modal-container');
+        container.innerHTML = `
+            <div class="overlay" onclick="game.closeModal()"></div>
+            <div class="auth-modal">
+                <h3>📝 用户注册</h3>
+                <input type="text" id="reg-username" placeholder="用户名（3-20位）" maxlength="20">
+                <input type="text" id="reg-nickname" placeholder="昵称（可选）" maxlength="20">
+                <input type="password" id="reg-password" placeholder="密码（至少6位）" maxlength="20">
+                <div class="auth-error" id="reg-error"></div>
+                <button class="btn-primary" onclick="game.doRegister()">注册</button>
+                <p class="auth-tip">已有账号？<a onclick="game.closeModal(); game.showLoginModal()">立即登录</a></p>
+            </div>
+        `;
+    },
+
+    async doLogin() {
+        const username = document.getElementById('login-username').value.trim();
+        const password = document.getElementById('login-password').value;
+        const errorEl = document.getElementById('login-error');
+
+        if (!username || !password) {
+            errorEl.textContent = '请填写用户名和密码';
+            return;
+        }
+
+        const res = await api.auth.login(username, password);
+        if (res.success) {
+            setToken(res.data.token);
+            this.currentUser = res.data.user;
+            this.updateAuthUI();
+            this.closeModal();
+            await this.loadServerProgress();
+            this.updateHomeProgress();
+        } else {
+            errorEl.textContent = res.message || '登录失败';
+        }
+    },
+
+    async doRegister() {
+        const username = document.getElementById('reg-username').value.trim();
+        const nickname = document.getElementById('reg-nickname').value.trim();
+        const password = document.getElementById('reg-password').value;
+        const errorEl = document.getElementById('reg-error');
+
+        if (!username || !password) {
+            errorEl.textContent = '请填写用户名和密码';
+            return;
+        }
+        if (password.length < 6) {
+            errorEl.textContent = '密码至少6位';
+            return;
+        }
+
+        const res = await api.auth.register(username, password, nickname || username);
+        if (res.success) {
+            setToken(res.data.token);
+            this.currentUser = res.data.user;
+            this.updateAuthUI();
+            this.closeModal();
+        } else {
+            errorEl.textContent = res.message || '注册失败';
+        }
+    },
+
+    async loadServerProgress() {
+        if (!this.currentUser) return;
+        const res = await api.progress.get();
+        if (res.success && res.data) {
+            const p = res.data;
+            const completed = [];
+            if (p.level1_completed) completed.push(1);
+            if (p.level2_completed) completed.push(2);
+            if (p.level3_completed) completed.push(3);
+            const unlocked = [1];
+            for (let i = 2; i <= 3; i++) {
+                if (completed.includes(i - 1)) unlocked.push(i);
+            }
+            this.state.unlockedLevels = unlocked;
+            this.state.completedLevels = completed;
+            this.state.levelScores = {
+                1: p.level1_score || 0,
+                2: p.level2_score || 0,
+                3: p.level3_score || 0
+            };
+            this.state.totalScore = p.total_score || 0;
+            this.saveState();
+        }
+    },
+
+    async syncProgress() {
+        if (!this.currentUser) return;
+        await api.progress.save({
+            level1_score: this.state.levelScores[1] || 0,
+            level2_score: this.state.levelScores[2] || 0,
+            level3_score: this.state.levelScores[3] || 0,
+            level1_completed: this.state.completedLevels.includes(1),
+            level2_completed: this.state.completedLevels.includes(2),
+            level3_completed: this.state.completedLevels.includes(3)
+        });
     },
 
     /**
@@ -557,7 +745,7 @@ const game = {
      * @param {number} score - 关卡得分
      * @param {boolean} success - 是否成功通关
      */
-    completeLevel(level, score, success) {
+    async completeLevel(level, score, success) {
         if (success) {
             // 记录得分
             this.state.levelScores[level] = score;
@@ -576,11 +764,12 @@ const game = {
             }
 
             this.saveState();
+            await this.syncProgress();
 
-            // 检查是否全部通关
-            if (this.state.completedLevels.length === 3) {
-                setTimeout(() => this.showCompletePage(), 500);
-            }
+            // 检查是否全部通关（不再自动跳转，由用户在结算弹窗中点击）
+            // if (this.state.completedLevels.length === 3) {
+            //     setTimeout(() => this.showCompletePage(), 500);
+            // }
         }
     },
 
@@ -596,7 +785,7 @@ const game = {
     /**
      * 重置游戏
      */
-    resetGame() {
+    async resetGame() {
         this.state = {
             currentLevel: 0,
             unlockedLevels: [1],
@@ -605,6 +794,7 @@ const game = {
             levelScores: {}
         };
         this.saveState();
+        await this.syncProgress();
         this.showHome();
     },
 
@@ -794,34 +984,50 @@ const level1 = {
         if (!this.isPlaying) return;
 
         const gameArea = document.getElementById('game-area-level1');
-        const isTrap = Math.random() > 0.3;  // 70%概率生成陷阱
+        const rand = Math.random();
 
-        if (isTrap) {
-            // 生成陷阱
+        if (rand < 0.45) {
+            // 45%概率生成陷阱（红色）
             const trapTexts = ['刷单返利', '高佣金', '轻松赚钱', '垫付立返', '日赚500'];
             const trapText = trapTexts[Math.floor(Math.random() * trapTexts.length)];
             const trap = document.createElement('div');
             trap.className = 'trap';
             trap.textContent = trapText;
-            trap.dataset.trapType = trapText;  // 记录陷阱类型
+            trap.dataset.trapType = trapText;
             trap.style.left = Math.random() * 80 + 10 + '%';
             trap.style.animationDuration = this.config.trapSpeed + 's';
             gameArea.appendChild(trap);
             this.traps.push(trap);
 
-            // 自动清理
             setTimeout(() => {
                 if (trap.parentNode) {
                     trap.remove();
                     this.traps = this.traps.filter(t => t !== trap);
-                    // 成功躲避加分
                     this.addScore(10);
-                    // 显示知识点
                     this.showTip();
                 }
             }, this.config.trapSpeed * 1000);
+        } else if (rand < 0.75) {
+            // 30%概率生成正确知识道具（绿色）
+            const goodTexts = Object.keys(GOOD_ITEMS);
+            const goodText = goodTexts[Math.floor(Math.random() * goodTexts.length)];
+            const goodItem = document.createElement('div');
+            goodItem.className = 'good-item';
+            goodItem.textContent = goodText;
+            goodItem.dataset.goodType = goodText;
+            goodItem.style.left = Math.random() * 80 + 10 + '%';
+            goodItem.style.animationDuration = (this.config.trapSpeed + 0.5) + 's';
+            gameArea.appendChild(goodItem);
+            this.items.push(goodItem);
+
+            setTimeout(() => {
+                if (goodItem.parentNode) {
+                    goodItem.remove();
+                    this.items = this.items.filter(i => i !== goodItem);
+                }
+            }, (this.config.trapSpeed + 0.5) * 1000);
         } else {
-            // 生成道具
+            // 25%概率生成盾牌道具
             const item = document.createElement('div');
             item.className = 'item';
             item.textContent = '🛡️';
@@ -852,6 +1058,18 @@ const level1 = {
         document.getElementById('level1-page').appendChild(popup);
 
         setTimeout(() => popup.remove(), 4000);
+    },
+
+    /**
+     * 显示正确知识道具提示
+     */
+    showGoodItemTip(goodItem) {
+        const popup = document.createElement('div');
+        popup.className = 'tip-popup good-tip';
+        popup.innerHTML = `<strong>${goodItem.title}</strong><br>${goodItem.tip}`;
+        document.getElementById('level1-page').appendChild(popup);
+
+        setTimeout(() => popup.remove(), 5000);
     },
 
     /**
@@ -892,10 +1110,23 @@ const level1 = {
         // 检测道具收集
         this.items.forEach(item => {
             if (item.parentNode && this.checkCollision(playerRect, item.getBoundingClientRect())) {
-                this.addScore(50);
-                this.playCollectSound(); // 播放收集音效
-                item.remove();
-                this.items = this.items.filter(i => i !== item);
+                if (item.classList.contains('good-item')) {
+                    // 收集正确知识道具
+                    this.addScore(30);
+                    this.playCollectSound();
+                    const goodType = item.dataset.goodType;
+                    if (goodType && GOOD_ITEMS[goodType]) {
+                        this.showGoodItemTip(GOOD_ITEMS[goodType]);
+                    }
+                    item.remove();
+                    this.items = this.items.filter(i => i !== item);
+                } else {
+                    // 收集盾牌道具
+                    this.addScore(50);
+                    this.playCollectSound();
+                    item.remove();
+                    this.items = this.items.filter(i => i !== item);
+                }
             }
         });
 
@@ -1117,18 +1348,19 @@ const level2 = {
         game.completeLevel(2, score, success);
 
         if (success) {
-            audioManager.playSuccess(); // 播放通关音效
+            audioManager.playSuccess();
             game.showResultModal({
-                icon: '💖',
-                title: '剧情通关！',
+                icon: '🛡️',
+                title: '警惕性很强！',
                 score: score,
                 knowledge: {
-                    title: '📚 网恋诈骗防范要点',
+                    title: '📚 如何防范"杀猪盘"诈骗',
                     items: [
-                        '网络交友需谨慎，不要轻信陌生人',
-                        '涉及金钱往来务必核实身份',
-                        '警惕"杀猪盘"式情感诈骗',
-                        '未见面之前不要有大额转账'
+                        '对网上陌生人保持警惕，不轻易透露个人信息',
+                        '不要和陌生网友聊工作、收入、家庭等隐私话题',
+                        '无论对方多"正常"，提到投资、理财就要警惕',
+                        '真正的投资不会通过网友、网友推荐',
+                        '杀猪盘会花很长时间培养感情，不要掉以轻心'
                     ]
                 },
                 showNext: true,
@@ -1137,18 +1369,18 @@ const level2 = {
                 onRetry: 'game.closeModal(); level2.init()'
             });
         } else {
-            audioManager.playFail(); // 播放失败音效
+            audioManager.playFail();
             game.showResultModal({
-                icon: '💔',
-                title: '需要提高警惕',
+                icon: '⚠️',
+                title: '你差点上当了！',
                 score: score,
                 knowledge: {
-                    title: '⚠️ 你陷入了诈骗陷阱',
+                    title: '⚠️ 你陷入了"杀猪盘"陷阱',
                     items: [
-                        '网恋对象借钱99%是诈骗',
-                        '不要被感情冲昏头脑',
-                        '涉及转账务必多方核实',
-                        '建议重新学习反诈知识'
+                        '骗子会伪装成"同行""同好"来拉近关系',
+                        '不要对陌生网友透露个人信息、兴趣爱好',
+                        '无论对方多"正常"，提到投资就要警惕',
+                        '网上认识的"朋友"推荐理财，99%是诈骗'
                     ]
                 },
                 showNext: false,
@@ -1360,6 +1592,7 @@ const level3 = {
                     </ul>
                 </div>
                 <div class="btn-group">
+                    ${game.state.completedLevels.length === 3 ? `<button class="btn-next" onclick="game.closeModal(); game.showCompletePage()">查看通关总结 →</button>` : ''}
                     <button class="btn-retry" onclick="game.closeModal(); level3.init()" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">再玩一次</button>
                     <button class="btn-retry" onclick="game.closeModal(); game.showLevelSelect()">返回关卡</button>
                 </div>
@@ -1372,6 +1605,6 @@ const level3 = {
 // ========================================
 // 页面加载完成后初始化游戏
 // ========================================
-window.onload = () => {
-    game.init();
+window.onload = async () => {
+    await game.init();
 };

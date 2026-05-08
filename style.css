@@ -441,14 +441,15 @@ body {
 
 .trap {
     position: absolute;
-    padding: 8px 15px;
+    padding: 10px 18px;
     background: #ff4757;
     color: white;
     border-radius: 20px;
-    font-size: 12px;
+    font-size: 16px;
     font-weight: bold;
     box-shadow: 0 3px 10px rgba(255, 71, 87, 0.4);
     animation: fall linear;
+    white-space: nowrap;
 }
 
 @keyframes fall {
@@ -469,6 +470,32 @@ body {
     box-shadow: 0 3px 10px rgba(240, 147, 251, 0.4);
     animation: fall linear;
     z-index: 4;
+}
+
+.good-item {
+    position: absolute;
+    padding: 10px 18px;
+    background: #52c41a;
+    color: white;
+    border-radius: 20px;
+    font-size: 16px;
+    font-weight: bold;
+    box-shadow: 0 3px 10px rgba(82, 196, 26, 0.4);
+    animation: fall linear;
+    white-space: nowrap;
+    z-index: 4;
+}
+
+.tip-popup.good-tip {
+    background: rgba(82, 196, 26, 0.95);
+    color: white;
+    border-left: 4px solid #52c41a;
+}
+
+.tip-popup.good-tip strong {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 14px;
 }
 
 .tip-popup {
@@ -1200,6 +1227,118 @@ body {
 /* 选中文字样式 */
 ::selection {
     background: rgba(102, 126, 234, 0.3);
+}
+
+/* ========================================
+   用户系统样式
+   ======================================== */
+.auth-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    padding: 10px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 12px;
+    margin: 0 20px 20px;
+    backdrop-filter: blur(10px);
+}
+
+#user-info {
+    font-size: 14px;
+    color: white;
+}
+
+.btn-small {
+    background: rgba(255,255,255,0.25);
+    border: 1px solid rgba(255,255,255,0.4);
+    color: white;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-small:hover {
+    background: rgba(255,255,255,0.4);
+}
+
+.btn-secondary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 14px 40px;
+    font-size: 16px;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+    transition: all 0.3s ease;
+    font-weight: bold;
+    margin-top: 15px;
+}
+
+.btn-secondary:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 12px 35px rgba(102, 126, 234, 0.5);
+}
+
+.auth-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    border-radius: 20px;
+    padding: 30px;
+    width: 90%;
+    max-width: 360px;
+    z-index: 1001;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    animation: modalIn 0.3s ease;
+}
+
+.auth-modal h3 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #333;
+    font-size: 20px;
+}
+
+.auth-modal input {
+    width: 100%;
+    padding: 12px 15px;
+    margin-bottom: 12px;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+.auth-modal input:focus {
+    border-color: #667eea;
+}
+
+.auth-error {
+    color: #f5576c;
+    font-size: 13px;
+    margin-bottom: 10px;
+    min-height: 18px;
+}
+
+.auth-tip {
+    text-align: center;
+    font-size: 13px;
+    color: #666;
+    margin-top: 15px;
+}
+
+.auth-tip a {
+    color: #667eea;
+    cursor: pointer;
+    text-decoration: underline;
 }
 
 /* ========================================
