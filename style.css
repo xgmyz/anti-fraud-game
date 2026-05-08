@@ -449,7 +449,10 @@ body {
     font-weight: bold;
     box-shadow: 0 3px 10px rgba(255, 71, 87, 0.4);
     animation: fall linear;
-    white-space: nowrap;
+    white-space: normal;
+    max-width: 85%;
+    text-align: center;
+    line-height: 1.4;
 }
 
 @keyframes fall {
@@ -482,8 +485,11 @@ body {
     font-weight: bold;
     box-shadow: 0 3px 10px rgba(82, 196, 26, 0.4);
     animation: fall linear;
-    white-space: nowrap;
+    white-space: normal;
     z-index: 4;
+    max-width: 85%;
+    text-align: center;
+    line-height: 1.4;
 }
 
 .tip-popup.good-tip {
